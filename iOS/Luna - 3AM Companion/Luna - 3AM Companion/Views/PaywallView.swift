@@ -1,0 +1,198 @@
+//
+//  PaywallView.swift
+//  Luna - 3AM Companion
+//
+//  Created by Musa Masalla on 2026/02/05.
+//
+
+import SwiftUI
+
+struct PaywallView: View {
+    let manager: SubscriptionManager
+    @Environment(\.dismiss) private var dismiss
+    
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    
+    var body: some View {
+        ZStack {
+            StarryNightBackground()
+                .ignoresSafeArea()
+            
+            VStack(spacing: Theme.spacingLarge) {
+                // Close button
+                HStack {
+                    Spacer()
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(Theme.textMuted)
+                    }
+                }
+                .padding()
+                
+                Spacer()
+                
+                // Luna avatar
+                LunaAvatarLarge()
+                
+                // Title
+                VStack(spacing: Theme.spacingSmall) {
+                    Text("Unlimited Luna")
+                        .font(Theme.titleFont)
+                        .foregroundStyle(Theme.textPrimary)
+                    
+                    Text("Chat whenever you can't sleep")
+                        .font(Theme.bodyFont)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                
+                // Features
+                VStack(spacing: Theme.spacingMedium) {
+                    FeatureItem(icon: "infinity", text: "Unlimited conversations")
+                    FeatureItem(icon: "bolt.fill", text: "Priority response time")
+                    FeatureItem(icon: "sparkles", text: "All future features")
+                }
+                .padding(.vertical, Theme.spacingLarge)
+                .background(.ultraThinMaterial)
+                .clipShape(.rect(cornerRadius: Theme.cornerRadiusLarge))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge)
+                        .stroke(Theme.premiumGold.opacity(0.3), lineWidth: 1)
+                )
+                .shadow(color: Theme.premiumGold.opacity(0.1), radius: 20, x: 0, y: 0)
+                .padding(.horizontal)
+                
+                Spacer()
+                
+                // Pricing
+                VStack(spacing: Theme.spacingSmall) {
+                    Text("7-day free trial")
+                        .font(Theme.headlineFont)
+                        .foregroundStyle(Theme.premiumGold)
+                    
+                    Text("then \(manager.priceString)/month")
+                        .font(Theme.bodyFont)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                
+                // CTA Button
+                VStack(spacing: Theme.spacingMedium) {
+                    Button {
+                        Task {
+                            await purchasePremium()
+                        }
+                    } label: {
+                        if isLoading {
+                            ProgressView()
+                                .tint(Theme.backgroundPrimary)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                        } else {
+                            Text("Start Free Trial")
+                                .font(Theme.headlineFont)
+                                .foregroundStyle(Theme.backgroundPrimary)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                        }
+                    }
+                    .background(Theme.premiumGradient)
+                    .clipShape(.rect(cornerRadius: Theme.cornerRadiusPill))
+                    .disabled(isLoading)
+                    
+                    Button {
+                        Task {
+                            await restorePurchases()
+                        }
+                    } label: {
+                        Text("Restore Purchases")
+                            .font(Theme.captionFont)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+                .padding(.horizontal, Theme.spacingLarge)
+                
+                // Error message
+                if let error = errorMessage {
+                    Text(error)
+                        .font(Theme.captionFont)
+                        .foregroundStyle(.red)
+                        .multilineTextAlignment(.center)
+                }
+                
+                // Legal
+                Text("Cancel anytime. Subscription auto-renews.")
+                    .font(Theme.smallFont)
+                    .foregroundStyle(Theme.textMuted)
+                    .padding(.bottom, Theme.spacingLarge)
+            }
+        }
+        .preferredColorScheme(.dark)
+    }
+    
+    // MARK: - Actions
+    
+    private func purchasePremium() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            try await manager.purchasePremium()
+            dismiss()
+        } catch let error as SubscriptionError {
+            if error != .userCancelled {
+                errorMessage = error.errorDescription
+            }
+        } catch {
+            errorMessage = "Something went wrong. Please try again."
+        }
+        
+        isLoading = false
+    }
+    
+    private func restorePurchases() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            try await manager.restorePurchases()
+            if manager.isPremium {
+                dismiss()
+            } else {
+                errorMessage = "No active subscription found"
+            }
+        } catch {
+            errorMessage = "Could not restore purchases"
+        }
+        
+        isLoading = false
+    }
+}
+
+// MARK: - Feature Item
+private struct FeatureItem: View {
+    let icon: String
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: Theme.spacingMedium) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(Theme.premiumGold)
+                .frame(width: 30)
+            
+            Text(text)
+                .font(Theme.bodyFont)
+                .foregroundStyle(Theme.textPrimary)
+            
+            Spacer()
+        }
+        .padding(.horizontal, Theme.spacingXLarge)
+    }
+}
+
+#Preview {
+    PaywallView(manager: SubscriptionManager())
+}
