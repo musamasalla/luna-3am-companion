@@ -20,7 +20,7 @@ enum Config {
     // No API keys needed here - uses Firebase project authentication
     
     // MARK: - Support
-    static let privacyPolicyURL = "https://luna3am.com/privacy"
-    static let termsOfServiceURL = "https://luna3am.com/terms"
-    static let supportEmail = "support@luna3am.com"
+    static let privacyPolicyURL = "https://musamasalla.github.io/luna-3am-companion/privacy.html"
+    static let termsOfServiceURL = "https://musamasalla.github.io/luna-3am-companion/terms.html"
+    static let supportEmail = "musamasalladev@gmail.com"
 }

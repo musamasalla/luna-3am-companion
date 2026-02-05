@@ -94,12 +94,12 @@ struct SettingsView: View {
                     
                     // About Section
                     Section {
-                        Link(destination: URL(string: "https://luna-companion.app/privacy")!) {
+                        Link(destination: URL(string: "https://musamasalla.github.io/luna-3am-companion/privacy.html")!) {
                             Label("Privacy Policy", systemImage: "hand.raised.fill")
                                 .foregroundStyle(Theme.textPrimary)
                         }
                         
-                        Link(destination: URL(string: "https://luna-companion.app/terms")!) {
+                        Link(destination: URL(string: "https://musamasalla.github.io/luna-3am-companion/terms.html")!) {
                             Label("Terms of Service", systemImage: "doc.text.fill")
                                 .foregroundStyle(Theme.textPrimary)
                         }
