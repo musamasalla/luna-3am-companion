@@ -69,7 +69,12 @@ struct ConversationHistoryView: View {
             formatter.dateFormat = "MMMM yyyy"
             return formatter.string(from: conversation.createdAt)
         }
-        return grouped.sorted { $0.value.first!.createdAt > $1.value.first!.createdAt }
+        return grouped.sorted { 
+            guard let first = $0.value.first, let second = $1.value.first else {
+                return false
+            }
+            return first.createdAt > second.createdAt
+        }
     }
     
     private func sectionHeader(_ title: String) -> some View {

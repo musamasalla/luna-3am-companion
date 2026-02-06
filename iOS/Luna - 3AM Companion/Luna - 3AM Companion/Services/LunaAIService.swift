@@ -170,7 +170,7 @@ final class LunaAIService {
                 "I hear you. Anxiety can feel so heavy, especially at night. Would it help to talk through what's on your mind?",
                 "Those anxious thoughts can be rough when everything's quiet. I'm here to listen.",
                 "Night anxiety is real. Sometimes just naming what we're feeling helps a little. What's weighing on you?"
-            ].randomElement()!
+            ].randomElement() ?? "I hear you. Let's talk through what's on your mind."
         }
         
         // Can't sleep responses
@@ -179,7 +179,7 @@ final class LunaAIService {
                 "Being awake when you want to sleep is frustrating. Want to tell me what's keeping you up?",
                 "I get it - sometimes our minds just won't quiet down. What's going through your head tonight?",
                 "Sleep can be elusive sometimes. I'm here to keep you company while you wait for it."
-            ].randomElement()!
+            ].randomElement() ?? "I'm here to keep you company."
         }
         
         // Sad/lonely responses
@@ -188,7 +188,7 @@ final class LunaAIService {
                 "I'm sorry you're feeling this way. The night can make those feelings stronger. I'm here with you.",
                 "You're not alone right now - I'm here. Want to tell me more about what you're feeling?",
                 "Those feelings are valid. Sometimes the quiet hours bring up a lot. Take your time."
-            ].randomElement()!
+            ].randomElement() ?? "I'm here with you."
         }
         
         // Greeting responses
@@ -197,7 +197,7 @@ final class LunaAIService {
                 "Hey there! I'm glad you reached out. How are you doing tonight?",
                 "Hi! It's nice to meet you. What brings you here at this hour?",
                 "Hello, friend. I'm Luna - here to keep you company. How are you?"
-            ].randomElement()!
+            ].randomElement() ?? "Hey there! How are you doing tonight?"
         }
         
         // Default warm responses
@@ -206,6 +206,6 @@ final class LunaAIService {
             "I hear you. Sometimes it helps just to get thoughts out. What else is there?",
             "Thank you for sharing that with me. How does it feel to talk about it?",
             "I'm here for you. Take your time - there's no rush."
-        ].randomElement()!
+        ].randomElement() ?? "I'm listening. Tell me more."
     }
 }
