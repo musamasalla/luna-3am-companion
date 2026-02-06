@@ -24,13 +24,14 @@ struct Luna___3AM_CompanionApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @State private var subscriptionManager = SubscriptionManager()
     
     var body: some Scene {
         WindowGroup {
             if hasCompletedOnboarding {
                 MainTabView()
             } else {
-                OnboardingView()
+                OnboardingView(subscriptionManager: subscriptionManager)
             }
         }
         .modelContainer(for: [Conversation.self, Message.self])

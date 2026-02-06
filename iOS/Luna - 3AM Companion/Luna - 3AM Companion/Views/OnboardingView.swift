@@ -10,6 +10,7 @@ import SwiftUI
 struct OnboardingView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var currentPage = 0
+    let subscriptionManager: SubscriptionManager
     
     var body: some View {
         ZStack {
@@ -26,8 +27,12 @@ struct OnboardingView: View {
                 HowItWorksPage()
                     .tag(2)
                 
-                SubscriptionPage(onComplete: completeOnboarding)
-                    .tag(3)
+                // Use the proper PaywallView with StoreKit integration
+                OnboardingPaywallWrapper(
+                    manager: subscriptionManager,
+                    onComplete: completeOnboarding
+                )
+                .tag(3)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
             .indexViewStyle(.page(backgroundDisplayMode: .always))
@@ -137,48 +142,28 @@ private struct HowItWorksPage: View {
     }
 }
 
-// MARK: - Subscription Page
-private struct SubscriptionPage: View {
+// MARK: - Onboarding Paywall Wrapper
+private struct OnboardingPaywallWrapper: View {
+    let manager: SubscriptionManager
     var onComplete: () -> Void
     
     var body: some View {
-        VStack(spacing: Theme.spacingLarge) {
-            Spacer()
+        ZStack {
+            // Reuse the compliant PaywallView
+            PaywallView(manager: manager, onComplete: onComplete)
             
-            Text("Start Your Free Trial")
-                .font(Theme.titleFont)
-                .foregroundStyle(Theme.textPrimary)
-            
-            VStack(spacing: Theme.spacingMedium) {
-                FeatureRow(text: "5 free conversations per week")
-                FeatureRow(text: "Unlimited with Premium - $2.99/mo")
-                FeatureRow(text: "7-day free trial included")
-            }
-            .padding(.horizontal, Theme.spacingMedium)
-            
-            Spacer()
-            
-            VStack(spacing: Theme.spacingMedium) {
-                Button(action: onComplete) {
-                    Text("Start Free Trial")
-                        .font(Theme.headlineFont)
-                        .foregroundStyle(Theme.backgroundPrimary)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Theme.premiumGradient)
-                        .clipShape(.rect(cornerRadius: Theme.cornerRadiusPill))
-                }
+            // Overlay a "Continue with Free" option at the bottom
+            VStack {
+                Spacer()
                 
                 Button(action: onComplete) {
                     Text("Continue with Free")
                         .font(Theme.bodyFont)
                         .foregroundStyle(Theme.textSecondary)
                 }
+                .padding(.bottom, 100) // Above the legal footer
             }
-            .padding(.horizontal, Theme.spacingLarge)
-            .padding(.bottom, Theme.spacingXLarge)
         }
-        .padding()
     }
 }
 
@@ -209,30 +194,6 @@ private struct UseCaseRow: View {
     }
 }
 
-private struct FeatureRow: View {
-    let text: String
-    
-    var body: some View {
-        HStack(spacing: Theme.spacingMedium) {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(Theme.lunaOrange)
-            
-            Text(text)
-                .font(Theme.bodyFont)
-                .foregroundStyle(Theme.textPrimary)
-            
-            Spacer()
-        }
-        .padding()
-        .background(.ultraThinMaterial)
-        .clipShape(.rect(cornerRadius: Theme.cornerRadiusMedium))
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium)
-                .stroke(.white.opacity(0.1), lineWidth: 1)
-        )
-    }
-}
-
 private struct SwipeHint: View {
     var body: some View {
         Text("Swipe to continue →")
@@ -243,5 +204,5 @@ private struct SwipeHint: View {
 }
 
 #Preview {
-    OnboardingView()
+    OnboardingView(subscriptionManager: SubscriptionManager())
 }

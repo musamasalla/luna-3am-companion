@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PaywallView: View {
     let manager: SubscriptionManager
+    var onComplete: (() -> Void)? = nil  // Optional callback for onboarding
     @Environment(\.dismiss) private var dismiss
     
     @State private var isLoading = false
@@ -122,11 +123,21 @@ struct PaywallView: View {
                         .multilineTextAlignment(.center)
                 }
                 
-                // Legal
-                Text("Cancel anytime. Subscription auto-renews.")
+                // Legal footer
+                VStack(spacing: Theme.spacingSmall) {
+                    Text("Cancel anytime. Subscription auto-renews.")
+                        .font(Theme.smallFont)
+                        .foregroundStyle(Theme.textMuted)
+                    
+                    HStack(spacing: Theme.spacingMedium) {
+                        Link("Terms of Service", destination: URL(string: "https://musamasalla.github.io/luna-3am-companion/terms.html")!)
+                        Text("·").foregroundStyle(Theme.textMuted)
+                        Link("Privacy Policy", destination: URL(string: "https://musamasalla.github.io/luna-3am-companion/privacy.html")!)
+                    }
                     .font(Theme.smallFont)
                     .foregroundStyle(Theme.textMuted)
-                    .padding(.bottom, Theme.spacingLarge)
+                }
+                .padding(.bottom, Theme.spacingLarge)
             }
         }
         .preferredColorScheme(.dark)
@@ -140,6 +151,7 @@ struct PaywallView: View {
         
         do {
             try await manager.purchasePremium()
+            onComplete?()
             dismiss()
         } catch let error as SubscriptionError {
             if error != .userCancelled {
