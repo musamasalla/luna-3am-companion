@@ -120,9 +120,13 @@ struct LimitReachedView: View {
                 HStack(spacing: 24) {
                     Button("Restore Purchases") {
                         Task {
-                            await subscriptionManager.restorePurchases()
-                            if subscriptionManager.isPremium {
-                                dismiss()
+                            do {
+                                try await subscriptionManager.restorePurchases()
+                                if subscriptionManager.isPremium {
+                                    dismiss()
+                                }
+                            } catch {
+                                print("Restore failed: \(error)")
                             }
                         }
                     }
@@ -155,11 +159,15 @@ struct LimitReachedView: View {
     
     private func purchase() async {
         isPurchasing = true
-        await subscriptionManager.purchase()
-        isPurchasing = false
+        defer { isPurchasing = false }
         
-        if subscriptionManager.isPremium {
-            dismiss()
+        do {
+            try await subscriptionManager.purchasePremium()
+            if subscriptionManager.isPremium {
+                dismiss()
+            }
+        } catch {
+            print("Purchase failed: \(error)")
         }
     }
 }

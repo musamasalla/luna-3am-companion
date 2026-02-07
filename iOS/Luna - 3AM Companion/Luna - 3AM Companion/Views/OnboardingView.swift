@@ -148,22 +148,12 @@ private struct OnboardingPaywallWrapper: View {
     var onComplete: () -> Void
     
     var body: some View {
-        ZStack {
-            // Reuse the compliant PaywallView
-            PaywallView(manager: manager, onComplete: onComplete)
-            
-            // Overlay a "Continue with Free" option at the bottom
-            VStack {
-                Spacer()
-                
-                Button(action: onComplete) {
-                    Text("Continue with Free")
-                        .font(Theme.bodyFont)
-                        .foregroundStyle(Theme.textSecondary)
-                }
-                .padding(.bottom, 100) // Above the legal footer
-            }
-        }
+        // Reuse the compliant PaywallView with unified layout
+        PaywallView(
+            manager: manager,
+            onComplete: onComplete,
+            showSkipButton: true
+        )
     }
 }
 

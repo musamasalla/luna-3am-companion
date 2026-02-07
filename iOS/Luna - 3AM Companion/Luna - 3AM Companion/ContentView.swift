@@ -9,8 +9,11 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var subscriptionManager = SubscriptionManager()
+    @State private var usageTracker = UsageTracker()
+    
     var body: some View {
-        ChatView()
+        ChatView(subscriptionManager: subscriptionManager, usageTracker: usageTracker)
     }
 }
 
