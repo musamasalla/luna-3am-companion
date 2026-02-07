@@ -53,6 +53,7 @@ struct PaywallView: View {
                 // Features
                 VStack(spacing: Theme.spacingMedium) {
                     FeatureItem(icon: "infinity", text: "Unlimited conversations")
+                    FeatureItem(icon: "brain.head.profile", text: "Luna remembers you")
                     FeatureItem(icon: "bolt.fill", text: "Priority response time")
                     FeatureItem(icon: "sparkles", text: "All future features")
                 }

@@ -12,11 +12,15 @@ struct ChatView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Conversation.createdAt, order: .reverse) private var conversations: [Conversation]
     
+    let subscriptionManager: SubscriptionManager
+    let usageTracker: UsageTracker
+    
     @State private var inputText = ""
     @State private var isLunaTyping = false
     @State private var currentConversation: Conversation?
     @State private var scrollProxy: ScrollViewProxy?
     @State private var isHeaderExpanded = true
+    @State private var showLimitPaywall = false
     @FocusState private var isInputFocused: Bool
     
     private var aiService: LunaAIService { LunaAIService.shared }
@@ -107,6 +111,9 @@ struct ChatView: View {
         .onAppear {
             setupConversation()
         }
+        .sheet(isPresented: $showLimitPaywall) {
+            LimitReachedView(subscriptionManager: subscriptionManager, usageTracker: usageTracker)
+        }
     }
     
     // MARK: - Actions
@@ -123,7 +130,24 @@ struct ChatView: View {
             
             // Load existing message history into AI service for context
             aiService.loadConversationHistory(existingConversation.sortedMessages)
+            
+            // Load extended memory for premium users
+            if subscriptionManager.isPremium {
+                let pastConversations = conversations.filter { !calendar.isDate($0.createdAt, inSameDayAs: now) }
+                aiService.loadMemoryContext(from: pastConversations)
+            } else {
+                aiService.clearMemoryContext()
+            }
         } else {
+            // Check if free user has reached their weekly limit
+            if !usageTracker.canStartConversation(isPremium: subscriptionManager.isPremium) {
+                showLimitPaywall = true
+                return
+            }
+            
+            // Record this new conversation for usage tracking
+            usageTracker.recordConversation()
+            
             // Create new conversation for tonight
             let newConversation = Conversation(title: generateConversationTitle())
             modelContext.insert(newConversation)
@@ -250,7 +274,7 @@ private struct ScrollOffsetPreferenceKey: PreferenceKey {
 // Local ChatHeader removed in favor of FluidHeader component
 
 #Preview {
-    ChatView()
+    ChatView(subscriptionManager: SubscriptionManager(), usageTracker: UsageTracker())
         .modelContainer(for: [Conversation.self, Message.self], inMemory: true)
 }
 

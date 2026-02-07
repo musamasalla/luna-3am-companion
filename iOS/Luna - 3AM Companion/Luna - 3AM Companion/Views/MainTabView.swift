@@ -10,10 +10,12 @@ import SwiftData
 
 struct MainTabView: View {
     @State private var selectedTab = 0
+    @State private var subscriptionManager = SubscriptionManager()
+    @State private var usageTracker = UsageTracker()
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            ChatView()
+            ChatView(subscriptionManager: subscriptionManager, usageTracker: usageTracker)
                 .tabItem {
                     Label("Chat", systemImage: "bubble.left.fill")
                 }
@@ -40,3 +42,4 @@ struct MainTabView: View {
     MainTabView()
         .modelContainer(for: [Conversation.self, Message.self], inMemory: true)
 }
+

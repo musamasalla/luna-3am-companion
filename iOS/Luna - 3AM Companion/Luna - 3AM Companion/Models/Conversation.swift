@@ -15,6 +15,9 @@ final class Conversation {
     var lastMessageAt: Date
     var title: String
     
+    /// AI-generated summary for extended memory (premium feature)
+    var summary: String?
+    
     @Relationship(deleteRule: .cascade, inverse: \Message.conversation)
     var messages: [Message]
     
@@ -23,6 +26,7 @@ final class Conversation {
         self.createdAt = createdAt
         self.lastMessageAt = createdAt
         self.title = title
+        self.summary = nil
         self.messages = []
     }
     

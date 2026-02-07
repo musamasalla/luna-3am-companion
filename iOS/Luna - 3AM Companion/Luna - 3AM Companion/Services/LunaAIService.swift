@@ -16,6 +16,9 @@ final class LunaAIService {
     private var model: GenerativeModel?
     private var chat: Chat?
     
+    /// Memory context for premium users (past conversation summaries)
+    private var memoryContext: String = ""
+    
     // MARK: - Luna's Personality
     
     private let systemPrompt = """
@@ -89,8 +92,15 @@ final class LunaAIService {
         // Get time context for personalized responses
         let timeContext = getTimeContext()
         
-        // Build the prompt with time awareness
-        let enrichedMessage = "\(timeContext)\nUser says: \(message)"
+        // Build the prompt with time awareness and memory context
+        var enrichedMessage = "\(timeContext)\n"
+        
+        // Include memory context for premium users
+        if !memoryContext.isEmpty {
+            enrichedMessage += "[MEMORY - Past conversations: \(memoryContext)]\n"
+        }
+        
+        enrichedMessage += "User says: \(message)"
         
         do {
             guard let chat = chat else {
@@ -208,4 +218,66 @@ final class LunaAIService {
             "I'm here for you. Take your time - there's no rush."
         ].randomElement() ?? "I'm listening. Tell me more."
     }
+    
+    // MARK: - Extended Memory (Premium Feature)
+    
+    /// Load past conversation summaries for premium users
+    /// - Parameter conversations: Past conversations with summaries to load
+    func loadMemoryContext(from conversations: [Conversation]) {
+        // Take the 5 most recent conversations with summaries
+        let recentWithSummaries = conversations
+            .filter { $0.summary != nil && !$0.summary!.isEmpty }
+            .prefix(5)
+        
+        if recentWithSummaries.isEmpty {
+            memoryContext = ""
+            return
+        }
+        
+        // Build a condensed memory context
+        memoryContext = recentWithSummaries.compactMap { conversation in
+            guard let summary = conversation.summary else { return nil }
+            return "[\(conversation.title): \(summary)]"
+        }.joined(separator: " | ")
+    }
+    
+    /// Clear memory context (for free users or new sessions)
+    func clearMemoryContext() {
+        memoryContext = ""
+    }
+    
+    /// Generate a summary for a completed conversation
+    /// - Parameter conversation: The conversation to summarize
+    /// - Returns: A brief summary or nil if generation fails
+    func generateSummary(for conversation: Conversation) async -> String? {
+        guard let model = model else { return nil }
+        
+        let messages = conversation.sortedMessages
+        guard messages.count >= 2 else { return nil }
+        
+        // Build a prompt to summarize the conversation
+        let conversationText = messages.map { msg in
+            let speaker = msg.isFromLuna ? "Luna" : "User"
+            return "\(speaker): \(msg.content)"
+        }.joined(separator: "\n")
+        
+        let summaryPrompt = """
+        Summarize this late-night conversation in 1-2 sentences, focusing on:
+        - What the user was feeling or going through
+        - Key topics discussed
+        Keep it brief and useful for future context.
+        
+        Conversation:
+        \(conversationText)
+        """
+        
+        do {
+            let response = try await model.generateContent(summaryPrompt)
+            return response.text
+        } catch {
+            print("🔴 Summary generation failed: \(error)")
+            return nil
+        }
+    }
 }
+

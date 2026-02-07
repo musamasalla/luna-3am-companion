@@ -40,43 +40,54 @@ sleep,insomnia,anxiety,late night,companion,AI chat,mental health,calm,relax,3am
 ### Promotional Text (170 characters)
 *Editable without app update—use for seasonal promotions*
 ```
-Can't sleep? Racing thoughts at 3AM? Luna understands. Start your 7-day free trial and discover the companion you've been looking for. 💜
+Can't sleep? Chat with Luna like a friend who's awake at 3AM. 5 free chats per week. Upgrade for unlimited + Luna remembers you. 💜
 ```
-**Characters used: 137/170** ✓
+**Characters used: 133/170** ✓
 
 ### Description (4,000 characters max)
 ```
-Can't sleep? Mind racing at 3AM? Luna is your gentle AI companion, designed specifically for those quiet late-night moments when you need someone to talk to.
+Can't sleep? Mind racing at 3AM? Luna is your gentle AI companion for those quiet late-night moments when you need someone to talk to.
 
-🌙 WHY LUNA?
+🌙 LIKE A FRIEND WHO'S AWAKE AT 3AM
 
-Luna isn't like other AI assistants. She doesn't try to fix you or offer solutions. She listens. She understands. She's there when you need a calm presence in the chaos of sleepless nights.
+Luna isn't like other AI assistants. She doesn't try to fix you or offer solutions. She listens. She understands. She's there when the world is asleep but your mind isn't.
 
-✨ DESIGNED FOR 3AM
+✨ DESIGNED FOR TIRED EYES
 
-• Dark, soothing interface that won't strain your tired eyes
-• Gentle animations and soft colors for a calming experience
+• Dark mode optimized for 3AM—won't strain your eyes
+• Gentle animations and soothing colors
 • No harsh notifications—Luna waits for you
-• Conversation history so you can continue where you left off
+• Conversation history so you can pick up where you left off
 
-💜 FEATURES
+💜 FREE & PREMIUM
 
-• Unlimited conversations with Luna
-• AI-powered responses that understand context and emotion
-• Night-optimized design with glassmorphism effects
-• Conversation history saved locally on your device
-• Privacy-first: your thoughts never leave your phone
+FREE (5 chats per week):
+• 5 late-night conversations weekly
+• Full chat experience with Luna
+• Beautiful night-sky interface
+• Conversations saved on your device
 
-🌟 LUNA PREMIUM
-
-Unlock the full Luna experience:
-• Unlimited AI responses
+LUNA PREMIUM ($2.99/month):
+• Unlimited conversations—chat whenever you need
+• Luna remembers you—she recalls past conversations
 • Priority response time
-• Advanced conversation memory
+• All future features included
 • Support continued development
 
 Start with a 7-day free trial. Cancel anytime.
-$2.99/month after trial. Subscription auto-renews monthly.
+
+🌟 PERFECT FOR
+
+• Night owls who can't shut off their brain
+• Anyone dealing with insomnia or racing thoughts
+• People who need a judgment-free space at 3AM
+• Those who want company without waking anyone up
+
+❌ LUNA IS NOT
+
+• A replacement for professional mental health care
+• A crisis hotline (if you're in crisis, please text HOME to 741741)
+• Trying to fix you or give unsolicited advice
 
 🔒 YOUR PRIVACY MATTERS
 
@@ -85,7 +96,7 @@ $2.99/month after trial. Subscription auto-renews monthly.
 • No tracking or advertising
 • No data sold to third parties
 
-Whether you're dealing with insomnia, anxiety, stress, or just need company during sleepless nights, Luna is here for you. She won't judge. She won't rush. She's simply there.
+Whether you're dealing with insomnia, anxiety, stress, or just need company during sleepless nights, Luna is here. She won't judge. She won't rush. She's simply there.
 
 "Finally, something designed for the 3AM crowd." - Beta User
 
@@ -96,7 +107,7 @@ Download Luna and discover the companion you've been looking for.
 Terms of Service: https://musamasalla.github.io/luna-3am-companion/terms.html
 Privacy Policy: https://musamasalla.github.io/luna-3am-companion/privacy.html
 ```
-**Characters used: ~1,650/4,000** ✓
+**Characters used: ~1,850/4,000** ✓
 
 ---
 
