@@ -54,7 +54,7 @@ final class LunaAIService {
         // Initialize Gemini via Firebase AI
         model = FirebaseAI.firebaseAI(backend: .googleAI())
             .generativeModel(
-                modelName: "gemini-2.0-flash",
+                modelName: "gemini-2.5-flash-lite-preview-06-17",
                 generationConfig: GenerationConfig(
                     temperature: 0.8,
                     topP: 0.95,
