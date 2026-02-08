@@ -27,7 +27,7 @@ struct MainTabView: View {
                 }
                 .tag(1)
             
-            SettingsView()
+            SettingsView(subscriptionManager: subscriptionManager)
                 .tabItem {
                     Label("Settings", systemImage: "gearshape.fill")
                 }

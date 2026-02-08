@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E82711CB2F37497B0016B17A /* EdgeTTS in Frameworks */ = {isa = PBXBuildFile; productRef = E82711CA2F37497B0016B17A /* EdgeTTS */; };
 		E8A1A37E2F35123900B386D2 /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = E8A1A37D2F35123900B386D2 /* FirebaseAI */; };
 		E8A1A3802F35123900B386D2 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = E8A1A37F2F35123900B386D2 /* FirebaseCore */; };
 /* End PBXBuildFile section */
@@ -41,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E82711CB2F37497B0016B17A /* EdgeTTS in Frameworks */,
 				E8A1A3802F35123900B386D2 /* FirebaseCore in Frameworks */,
 				E8A1A37E2F35123900B386D2 /* FirebaseAI in Frameworks */,
 			);
@@ -87,6 +89,7 @@
 			packageProductDependencies = (
 				E8A1A37D2F35123900B386D2 /* FirebaseAI */,
 				E8A1A37F2F35123900B386D2 /* FirebaseCore */,
+				E82711CA2F37497B0016B17A /* EdgeTTS */,
 			);
 			productName = "Luna - 3AM Companion";
 			productReference = E8D4518A2F34F97C00F68448 /* Luna - 3AM Companion.app */;
@@ -118,6 +121,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				E8A1A37C2F35123900B386D2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				E82711C92F37497B0016B17A /* XCRemoteSwiftPackageReference "Edge-TTS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E8D4518B2F34F97C00F68448 /* Products */;
@@ -175,6 +179,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.musamasalla.Luna-3AM-Companion";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -209,6 +217,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.musamasalla.Luna-3AM-Companion";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -363,6 +375,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		E82711C92F37497B0016B17A /* XCRemoteSwiftPackageReference "Edge-TTS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/brewusinc/Edge-TTS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		E8A1A37C2F35123900B386D2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -374,6 +394,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		E82711CA2F37497B0016B17A /* EdgeTTS */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E82711C92F37497B0016B17A /* XCRemoteSwiftPackageReference "Edge-TTS" */;
+			productName = EdgeTTS;
+		};
 		E8A1A37D2F35123900B386D2 /* FirebaseAI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E8A1A37C2F35123900B386D2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

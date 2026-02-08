@@ -7,6 +7,9 @@
 
 import Foundation
 import FirebaseAILogic
+import os.log
+
+private let aiLogger = Logger(subsystem: "com.luna.companion", category: "AI")
 
 /// Luna's AI companion service powered by Google Gemini via Firebase
 @MainActor
@@ -102,22 +105,30 @@ final class LunaAIService {
         
         enrichedMessage += "User says: \(message)"
         
-        do {
-            guard let chat = chat else {
-                return getLocalFallbackResponse(for: message)
+        guard let chat = chat else {
+            throw LunaAIError.sessionNotInitialized
+        }
+        
+        let response = try await chat.sendMessage(enrichedMessage)
+        
+        if let text = response.text, !text.isEmpty {
+            return text
+        } else {
+            throw LunaAIError.emptyResponse
+        }
+    }
+    
+    enum LunaAIError: LocalizedError {
+        case sessionNotInitialized
+        case emptyResponse
+        
+        var errorDescription: String? {
+            switch self {
+            case .sessionNotInitialized:
+                return "The chat session is not initialized."
+            case .emptyResponse:
+                return "The AI returned an empty response."
             }
-            
-            let response = try await chat.sendMessage(enrichedMessage)
-            
-            if let text = response.text, !text.isEmpty {
-                return text
-            } else {
-                return getLocalFallbackResponse(for: message)
-            }
-        } catch {
-            print("🔴 LunaAIService Error: \(error)")
-            // Fallback response on error
-            return getLocalFallbackResponse(for: message)
         }
     }
     
@@ -226,7 +237,7 @@ final class LunaAIService {
     func loadMemoryContext(from conversations: [Conversation]) {
         // Take the 5 most recent conversations with summaries
         let recentWithSummaries = conversations
-            .filter { $0.summary != nil && !$0.summary!.isEmpty }
+            .filter { $0.summary?.isEmpty == false }
             .prefix(5)
         
         if recentWithSummaries.isEmpty {
@@ -275,7 +286,7 @@ final class LunaAIService {
             let response = try await model.generateContent(summaryPrompt)
             return response.text
         } catch {
-            print("🔴 Summary generation failed: \(error)")
+            aiLogger.error("Summary generation failed: \(error)")
             return nil
         }
     }

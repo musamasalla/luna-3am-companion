@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+import os.log
+
+private let viewLogger = Logger(subsystem: "com.luna.companion", category: "Views")
 
 /// Soft paywall shown when free users reach their weekly conversation limit
 struct LimitReachedView: View {
@@ -18,17 +21,9 @@ struct LimitReachedView: View {
     
     var body: some View {
         ZStack {
-            // Night sky background
-            LinearGradient(
-                colors: [
-                    Color(hex: "0a0a1a"),
-                    Color(hex: "1a1a3a"),
-                    Color(hex: "0a0a1a")
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            // Night sky background - use consistent theme
+            StarryNightBackground()
+                .ignoresSafeArea()
             
             VStack(spacing: 32) {
                 Spacer()
@@ -38,7 +33,7 @@ struct LimitReachedView: View {
                     Circle()
                         .fill(
                             RadialGradient(
-                                colors: [Color.purple.opacity(0.3), Color.clear],
+                                colors: [Theme.accentGlow.opacity(0.3), Color.clear],
                                 center: .center,
                                 startRadius: 40,
                                 endRadius: 100
@@ -46,28 +41,19 @@ struct LimitReachedView: View {
                         )
                         .frame(width: 200, height: 200)
                     
-                    Image(systemName: "moon.stars.fill")
-                        .font(.system(size: 80))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.purple, .blue],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                    LunaAvatarLarge()
                 }
                 
                 // Message
                 VStack(spacing: 16) {
                     Text("You've used your 5 free chats this week")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
+                        .font(Theme.headlineFont)
+                        .foregroundStyle(Theme.textPrimary)
                         .multilineTextAlignment(.center)
                     
                     Text("Upgrade to Luna Premium for unlimited late-night conversations")
-                        .font(.body)
-                        .foregroundColor(.white.opacity(0.7))
+                        .font(Theme.bodyFont)
+                        .foregroundStyle(Theme.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
                 }
@@ -75,6 +61,7 @@ struct LimitReachedView: View {
                 // Premium benefits
                 VStack(alignment: .leading, spacing: 12) {
                     benefitRow(icon: "infinity", text: "Unlimited conversations")
+                    benefitRow(icon: "waveform", text: "Voice Mode conversations")
                     benefitRow(icon: "brain.head.profile", text: "Luna remembers you")
                     benefitRow(icon: "bolt.fill", text: "Priority responses")
                     benefitRow(icon: "sparkles", text: "All future features")
@@ -126,7 +113,7 @@ struct LimitReachedView: View {
                                     dismiss()
                                 }
                             } catch {
-                                print("Restore failed: \(error)")
+                                viewLogger.error("Restore failed: \(error)")
                             }
                         }
                     }
@@ -167,7 +154,7 @@ struct LimitReachedView: View {
                 dismiss()
             }
         } catch {
-            print("Purchase failed: \(error)")
+            viewLogger.error("Purchase failed: \(error)")
         }
     }
 }

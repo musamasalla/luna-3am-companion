@@ -11,12 +11,26 @@ struct ChatInputBar: View {
     @Binding var text: String
     var isFocused: FocusState<Bool>.Binding
     var onSend: () -> Void
+    var onVoice: (() -> Void)? = nil
     var isDisabled: Bool = false
     
     private let maxCharacters = 500
     
     var body: some View {
         HStack(alignment: .bottom, spacing: Theme.spacingSmall) {
+            // Voice Mode Button (if enabled)
+            if let onVoice = onVoice {
+                Button(action: onVoice) {
+                    Image(systemName: "mic.fill")
+                        .font(.title2)
+                        .foregroundStyle(Theme.textSecondary)
+                        .padding(8)
+                        .background(Theme.inputBackground)
+                        .clipShape(Circle())
+                }
+                .disabled(isDisabled)
+            }
+            
             // Text input field
             TextField("What's on your mind?", text: $text, axis: .vertical)
                 .font(Theme.bodyFont)

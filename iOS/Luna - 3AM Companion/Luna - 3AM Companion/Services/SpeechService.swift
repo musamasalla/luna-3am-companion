@@ -9,6 +9,9 @@ import Foundation
 import Speech
 import AVFoundation
 import Observation
+import os.log
+
+private let speechLogger = Logger(subsystem: "com.luna.companion", category: "Speech")
 
 @Observable
 class SpeechService: NSObject, SFSpeechRecognizerDelegate, AVSpeechSynthesizerDelegate {
@@ -41,11 +44,9 @@ class SpeechService: NSObject, SFSpeechRecognizerDelegate, AVSpeechSynthesizerDe
         
         // Debug: Log TTS configuration
         if edgeTTSService.isConfigured {
-            print("🎙️ Edge TTS Server: Configured")
+            speechLogger.info("Edge TTS Server: Configured")
         } else {
-            print("🎙️ Edge TTS Server: Not configured, using Native TTS")
-            let voices = AVSpeechSynthesisVoice.speechVoices().filter { $0.language == "en-US" }
-            print("🎙️ Available Native Voices: \(voices.map { "\($0.name) (\($0.quality == .premium ? "Premium" : $0.quality == .enhanced ? "Enhanced" : "Default"))" })")
+            speechLogger.info("Edge TTS Server: Not configured, using Native TTS")
         }
     }
     
@@ -76,7 +77,7 @@ class SpeechService: NSObject, SFSpeechRecognizerDelegate, AVSpeechSynthesizerDe
         
         // Configure Audio Session for Recording
         let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetooth, .duckOthers])
+        try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetoothHFP, .duckOthers])
         try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
@@ -165,7 +166,7 @@ class SpeechService: NSObject, SFSpeechRecognizerDelegate, AVSpeechSynthesizerDe
         
         // Try Edge TTS Server first (if configured)
         if edgeTTSService.isConfigured {
-            print("🗣️ Attempting Edge TTS Server...")
+            speechLogger.debug("Attempting Edge TTS Server...")
             
             Task {
                 do {
@@ -178,8 +179,8 @@ class SpeechService: NSObject, SFSpeechRecognizerDelegate, AVSpeechSynthesizerDe
                     }
                     await MainActor.run { self.isSpeaking = false }
                 } catch {
-                    print("❌ Edge TTS Server failed: \(error.localizedDescription)")
-                    print("🔄 Falling back to Native TTS...")
+                    speechLogger.error("Edge TTS Server failed: \(error.localizedDescription)")
+                    speechLogger.info("Falling back to Native TTS...")
                     await MainActor.run {
                         self.speakNative(sanitizedText)
                     }
@@ -192,7 +193,7 @@ class SpeechService: NSObject, SFSpeechRecognizerDelegate, AVSpeechSynthesizerDe
     }
     
     private func speakNative(_ text: String) {
-        print("🗣️ Native TTS: Speaking '\(text.prefix(50))...'")
+        speechLogger.debug("Native TTS: Speaking '\(text.prefix(50))...'")
         
         // Configure Audio Session for Playback
         do {
@@ -200,7 +201,7 @@ class SpeechService: NSObject, SFSpeechRecognizerDelegate, AVSpeechSynthesizerDe
             try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
             try session.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
-            print("❌ Failed to configure audio session: \(error)")
+            speechLogger.error("Failed to configure audio session: \(error)")
         }
         
         // Create utterance
@@ -223,17 +224,17 @@ class SpeechService: NSObject, SFSpeechRecognizerDelegate, AVSpeechSynthesizerDe
     // MARK: - AVSpeechSynthesizerDelegate
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-        print("✅ Native TTS: Finished")
+        speechLogger.debug("Native TTS: Finished")
         isSpeaking = false
     }
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
-        print("▶️ Native TTS: Started")
+        speechLogger.debug("Native TTS: Started")
         isSpeaking = true
     }
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
-        print("⏹️ Native TTS: Cancelled")
+        speechLogger.debug("Native TTS: Cancelled")
         isSpeaking = false
     }
 }

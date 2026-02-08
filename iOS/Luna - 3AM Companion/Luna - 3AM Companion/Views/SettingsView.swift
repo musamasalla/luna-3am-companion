@@ -15,7 +15,8 @@ struct SettingsView: View {
     
     @State private var showPaywall = false
     @State private var showDeleteConfirmation = false
-    @State private var subscriptionManager = SubscriptionManager()
+    
+    let subscriptionManager: SubscriptionManager
     
     var body: some View {
         NavigationStack {
@@ -227,6 +228,6 @@ private struct SubscriptionStatusRow: View {
 }
 
 #Preview {
-    SettingsView()
+    SettingsView(subscriptionManager: SubscriptionManager())
         .modelContainer(for: [Conversation.self, Message.self], inMemory: true)
 }

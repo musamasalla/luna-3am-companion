@@ -8,6 +8,9 @@
 import Foundation
 import AVFoundation
 import Observation
+import os.log
+
+private let ttsLogger = Logger(subsystem: "com.luna.companion", category: "TTS")
 
 @Observable
 class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
@@ -29,7 +32,7 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
     
     init(serverURL: String = "https://openai-edge-tts-production-c3c6.up.railway.app", apiKey: String = "luna_tts_key") {
         // Use provided URL or check Info.plist for override
-        self.serverURL = serverURL.isEmpty ? (Bundle.main.object(forInfoPlistKey: "EDGE_TTS_SERVER_URL") as? String ?? "") : serverURL
+        self.serverURL = serverURL.isEmpty ? (Bundle.main.object(forInfoDictionaryKey: "EDGE_TTS_SERVER_URL") as? String ?? "") : serverURL
         self.apiKey = apiKey
         super.init()
     }
@@ -54,7 +57,7 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
         
         guard !sanitizedText.isEmpty else { return }
         
-        print("🗣️ EdgeTTS API: Requesting speech for '\(sanitizedText.prefix(50))...'")
+        ttsLogger.debug("EdgeTTS API: Requesting speech for '\(sanitizedText.prefix(50))...'")
         
         // Build request
         guard let url = URL(string: "\(serverURL)/v1/audio/speech") else {
@@ -86,7 +89,7 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
         
         guard httpResponse.statusCode == 200 else {
             let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ EdgeTTS API Error (\(httpResponse.statusCode)): \(errorMessage)")
+            ttsLogger.error("EdgeTTS API Error (\(httpResponse.statusCode)): \(errorMessage)")
             throw EdgeTTSError.serverError(statusCode: httpResponse.statusCode, message: errorMessage)
         }
         

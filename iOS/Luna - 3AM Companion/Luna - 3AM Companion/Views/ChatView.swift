@@ -21,6 +21,8 @@ struct ChatView: View {
     @State private var scrollProxy: ScrollViewProxy?
     @State private var isHeaderExpanded = true
     @State private var showLimitPaywall = false
+    @State private var isVoiceModeActive = false
+    @State private var showVoicePaywall = false
     @FocusState private var isInputFocused: Bool
     
     private var aiService: LunaAIService { LunaAIService.shared }
@@ -103,7 +105,7 @@ struct ChatView: View {
                 .zIndex(2) // Topmost layer
                 
                 // Input bar (Floating Overlay - Bottom)
-                ChatInputBar(text: $inputText, isFocused: $isInputFocused, onSend: sendMessage, isDisabled: isLunaTyping)
+                    ChatInputBar(text: $inputText, isFocused: $isInputFocused, onSend: sendMessage, onVoice: activateVoiceMode, isDisabled: isLunaTyping)
                     .zIndex(2)
             }
         }
@@ -114,9 +116,23 @@ struct ChatView: View {
         .sheet(isPresented: $showLimitPaywall) {
             LimitReachedView(subscriptionManager: subscriptionManager, usageTracker: usageTracker)
         }
+        .fullScreenCover(isPresented: $isVoiceModeActive) {
+            VoiceChatView()
+        }
+        .sheet(isPresented: $showVoicePaywall) {
+            PaywallView(manager: subscriptionManager, onComplete: { showVoicePaywall = false })
+        }
     }
     
     // MARK: - Actions
+    
+    private func activateVoiceMode() {
+        if subscriptionManager.isPremium {
+            isVoiceModeActive = true
+        } else {
+            showVoicePaywall = true
+        }
+    }
     
     private func setupConversation() {
         // Check if there's an existing conversation from tonight

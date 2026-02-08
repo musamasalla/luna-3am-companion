@@ -7,6 +7,9 @@
 //
 
 import CoreData
+import os.log
+
+private let persistenceLogger = Logger(subsystem: "com.luna.companion", category: "Persistence")
 
 struct PersistenceController {
     static let shared = PersistenceController()
@@ -20,7 +23,7 @@ struct PersistenceController {
         }
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
-                print("Core Data error: \(error), \(error.userInfo)")
+                persistenceLogger.error("Core Data error: \(error), \(error.userInfo)")
             }
         })
         container.viewContext.automaticallyMergesChangesFromParent = true

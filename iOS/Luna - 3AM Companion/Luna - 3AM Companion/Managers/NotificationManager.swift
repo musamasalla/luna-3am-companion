@@ -7,6 +7,9 @@
 
 import Foundation
 import UserNotifications
+import os.log
+
+private let notificationLogger = Logger(subsystem: "com.luna.companion", category: "Notifications")
 
 @Observable
 final class NotificationManager {
@@ -47,7 +50,7 @@ final class NotificationManager {
                 // Schedule
                 center.add(request) { error in
                     if let error = error {
-                        print("Error scheduling notification: \(error)")
+                        notificationLogger.error("Error scheduling notification: \(error)")
                     }
                 }
             }

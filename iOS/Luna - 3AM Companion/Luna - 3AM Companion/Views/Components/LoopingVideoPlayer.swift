@@ -7,6 +7,9 @@
 
 import SwiftUI
 import AVKit
+import os.log
+
+private let videoLogger = Logger(subsystem: "com.luna.companion", category: "Video")
 
 struct LoopingVideoPlayer: View {
     private let player: AVQueuePlayer
@@ -22,7 +25,7 @@ struct LoopingVideoPlayer: View {
             // Fallback empty player if file not found
             self.player = AVQueuePlayer()
             self.looper = nil
-            print("❌ Video file \(videoName).\(format) not found in bundle")
+            videoLogger.error("Video file \(videoName).\(format) not found in bundle")
         }
     }
     

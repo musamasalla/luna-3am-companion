@@ -8,6 +8,9 @@
 import Foundation
 import StoreKit
 import Observation
+import os.log
+
+private let storeLogger = Logger(subsystem: "com.luna.companion", category: "Store")
 
 /// Manages premium subscription state using StoreKit 2
 @Observable
@@ -18,7 +21,7 @@ final class SubscriptionManager {
     private(set) var purchaseInProgress = false
     
     // Store the task in a nonisolated way to allow cancellation in deinit
-    private nonisolated(unsafe) var updateListenerTask: Task<Void, Error>?
+    nonisolated(unsafe) private var updateListenerTask: Task<Void, Never>? = nil
     
     // MARK: - Initialization
     
@@ -40,7 +43,7 @@ final class SubscriptionManager {
         do {
             products = try await Product.products(for: [Config.premiumProductID])
         } catch {
-            print("Failed to load products: \(error)")
+            storeLogger.error("Failed to load products: \(error)")
         }
     }
     
@@ -98,7 +101,7 @@ final class SubscriptionManager {
     
     // MARK: - Transaction Listener
     
-    private func listenForTransactions() -> Task<Void, Error> {
+    private func listenForTransactions() -> Task<Void, Never> {
         Task.detached { [weak self] in
             for await result in Transaction.updates {
                 if case .verified(let transaction) = result {
