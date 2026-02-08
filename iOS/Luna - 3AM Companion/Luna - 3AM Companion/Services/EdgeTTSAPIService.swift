@@ -1,0 +1,162 @@
+//
+//  EdgeTTSAPIService.swift
+//  Luna - 3AM Companion
+//
+//  Service to call self-hosted Edge TTS server
+//
+
+import Foundation
+import AVFoundation
+import Observation
+
+@Observable
+class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
+    
+    // MARK: - Configuration
+    
+    /// Your Edge TTS server URL (set this after deployment)
+    /// For local testing: "http://localhost:5050"
+    /// For production: "https://your-app.railway.app" or similar
+    private let serverURL: String
+    private let apiKey: String
+    
+    // Voice options - Edge TTS neural voices
+    // See: https://tts.travisvn.com for full list
+    private let defaultVoice = "en-US-AnaNeural"  // Child-like, warm, expressive
+    
+    var isSpeaking: Bool = false
+    private var audioPlayer: AVAudioPlayer?
+    
+    init(serverURL: String = "https://openai-edge-tts-production-c3c6.up.railway.app", apiKey: String = "luna_tts_key") {
+        // Use provided URL or check Info.plist for override
+        self.serverURL = serverURL.isEmpty ? (Bundle.main.object(forInfoPlistKey: "EDGE_TTS_SERVER_URL") as? String ?? "") : serverURL
+        self.apiKey = apiKey
+        super.init()
+    }
+    
+    /// Check if the Edge TTS server is configured
+    var isConfigured: Bool {
+        !serverURL.isEmpty
+    }
+    
+    // MARK: - TTS Generation
+    
+    func speak(_ text: String) async throws {
+        guard isConfigured else {
+            throw EdgeTTSError.serverNotConfigured
+        }
+        
+        // Strip emojis
+        let sanitizedText = text.unicodeScalars
+            .filter { !($0.properties.isEmoji && $0.properties.isEmojiPresentation) }
+            .map(String.init)
+            .joined()
+        
+        guard !sanitizedText.isEmpty else { return }
+        
+        print("🗣️ EdgeTTS API: Requesting speech for '\(sanitizedText.prefix(50))...'")
+        
+        // Build request
+        guard let url = URL(string: "\(serverURL)/v1/audio/speech") else {
+            throw EdgeTTSError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.timeoutInterval = 30
+        
+        let body: [String: Any] = [
+            "model": "tts-1",
+            "input": sanitizedText,
+            "voice": defaultVoice,
+            "response_format": "mp3",
+            "speed": 1.0
+        ]
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        
+        // Make request
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw EdgeTTSError.invalidResponse
+        }
+        
+        guard httpResponse.statusCode == 200 else {
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("❌ EdgeTTS API Error (\(httpResponse.statusCode)): \(errorMessage)")
+            throw EdgeTTSError.serverError(statusCode: httpResponse.statusCode, message: errorMessage)
+        }
+        
+        // Play audio
+        try await playAudio(data: data)
+    }
+    
+    // MARK: - Audio Playback
+    
+    private func playAudio(data: Data) async throws {
+        // Configure audio session
+        let session = AVAudioSession.sharedInstance()
+        try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+        try session.setActive(true)
+        
+        // Create player
+        audioPlayer = try AVAudioPlayer(data: data)
+        audioPlayer?.delegate = self
+        
+        await MainActor.run { self.isSpeaking = true }
+        
+        guard let player = audioPlayer else {
+            throw EdgeTTSError.playbackFailed
+        }
+        
+        player.play()
+        
+        // Wait for playback to complete
+        while player.isPlaying {
+            try await Task.sleep(nanoseconds: 100_000_000) // 0.1s
+        }
+        
+        await MainActor.run { self.isSpeaking = false }
+    }
+    
+    func stop() {
+        audioPlayer?.stop()
+        isSpeaking = false
+    }
+    
+    // MARK: - AVAudioPlayerDelegate
+    
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        DispatchQueue.main.async {
+            self.isSpeaking = false
+        }
+    }
+}
+
+// MARK: - Errors
+
+enum EdgeTTSError: LocalizedError {
+    case serverNotConfigured
+    case invalidURL
+    case invalidResponse
+    case serverError(statusCode: Int, message: String)
+    case playbackFailed
+    
+    var errorDescription: String? {
+        switch self {
+        case .serverNotConfigured:
+            return "Edge TTS server URL not configured"
+        case .invalidURL:
+            return "Invalid server URL"
+        case .invalidResponse:
+            return "Invalid server response"
+        case .serverError(let code, let message):
+            return "Server error (\(code)): \(message)"
+        case .playbackFailed:
+            return "Audio playback failed"
+        }
+    }
+}
