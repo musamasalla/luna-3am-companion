@@ -161,6 +161,12 @@ struct PaywallView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .task {
+            // Ensure products are loaded when paywall opens
+            if manager.products.isEmpty {
+                await manager.loadProducts()
+            }
+        }
     }
     
     // MARK: - Actions
