@@ -75,7 +75,7 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
             "input": sanitizedText,
             "voice": defaultVoice,
             "response_format": "mp3",
-            "speed": 1.0
+            "speed": 1.15
         ]
         
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
