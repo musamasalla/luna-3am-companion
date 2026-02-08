@@ -12,6 +12,15 @@
 └─────────────────┘      MP3 Audio     └──────────────────┘       Audio        └─────────────────┘
 ```
 
+## AI Model
+
+| Version | Model | Notes |
+|---------|-------|-------|
+| v1.0 | `gemini-2.0-flash` | Initial release |
+| v1.0.1+ | `gemini-2.5-flash-lite-preview-06-17` | Better quality, lower latency |
+
+**Configuration:** `LunaAIService.swift` → `setupGemini()` method
+
 ## Cost Breakdown
 
 | Component | Technology | Cost |
