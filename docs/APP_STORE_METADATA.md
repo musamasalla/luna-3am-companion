@@ -34,13 +34,13 @@ FREE FEATURES
 • 5 supportive conversations per week
 • Access to Luna's calming presence anytime
 • Full conversation history
-• Soothing night-sky themes
+• Soothing night-sky design
 
 LUNA PREMIUM — $2.99/month
 Unlock the complete experience when you need it most:
 • Unlimited conversations—talk as long as you need
 • Voice Mode—speak naturally and hear Luna respond
-• Extended conversation memory—Luna remembers your journey
+• Cross-conversation memory—Luna remembers your past sessions
 • 7-day free trial to start
 
 SUBSCRIPTION INFO
