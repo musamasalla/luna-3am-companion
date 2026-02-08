@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import StoreKit
 
 struct PaywallView: View {
     let manager: SubscriptionManager
@@ -16,6 +17,7 @@ struct PaywallView: View {
     
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var isEligibleForTrial = true  // Assume eligible until checked
     
     var body: some View {
         ZStack {
@@ -85,13 +87,23 @@ struct PaywallView: View {
                         
                         // Pricing
                         VStack(spacing: Theme.spacingSmall) {
-                            Text("7-day free trial")
-                                .font(Theme.headlineFont)
-                                .foregroundStyle(Theme.premiumGold)
-                            
-                            Text("then \(manager.priceString)/month")
-                                .font(Theme.bodyFont)
-                                .foregroundStyle(Theme.textSecondary)
+                            if isEligibleForTrial {
+                                Text("7-day free trial")
+                                    .font(Theme.headlineFont)
+                                    .foregroundStyle(Theme.premiumGold)
+                                
+                                Text("then \(manager.priceString)/month")
+                                    .font(Theme.bodyFont)
+                                    .foregroundStyle(Theme.textSecondary)
+                            } else {
+                                Text("\(manager.priceString)/month")
+                                    .font(Theme.headlineFont)
+                                    .foregroundStyle(Theme.premiumGold)
+                                
+                                Text("Cancel anytime")
+                                    .font(Theme.bodyFont)
+                                    .foregroundStyle(Theme.textSecondary)
+                            }
                         }
                         
                         // CTA Button
@@ -108,7 +120,7 @@ struct PaywallView: View {
                                             .frame(maxWidth: .infinity)
                                             .padding()
                                     } else {
-                                        Text("Start Free Trial")
+                                        Text(isEligibleForTrial ? "Start Free Trial" : "Subscribe Now")
                                             .font(Theme.headlineFont)
                                             .foregroundStyle(Theme.backgroundPrimary)
                                             .frame(maxWidth: .infinity)
@@ -175,6 +187,12 @@ struct PaywallView: View {
             // Ensure products are loaded when paywall opens
             if manager.products.isEmpty {
                 await manager.loadProducts()
+            }
+            
+            // Check if user is eligible for intro offer (free trial)
+            if let product = manager.products.first,
+               let subscription = product.subscription {
+                isEligibleForTrial = await subscription.isEligibleForIntroOffer
             }
         }
     }
