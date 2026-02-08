@@ -114,13 +114,21 @@ struct ChatView: View {
             setupConversation()
         }
         .sheet(isPresented: $showLimitPaywall) {
-            PaywallView(manager: subscriptionManager, onComplete: { showLimitPaywall = false })
+            PaywallView(
+                manager: subscriptionManager,
+                onComplete: { showLimitPaywall = false },
+                contextMessage: "You've used your 5 free chats this week"
+            )
         }
         .fullScreenCover(isPresented: $isVoiceModeActive) {
             VoiceChatView()
         }
         .sheet(isPresented: $showVoicePaywall) {
-            PaywallView(manager: subscriptionManager, onComplete: { showVoicePaywall = false })
+            PaywallView(
+                manager: subscriptionManager,
+                onComplete: { showVoicePaywall = false },
+                contextMessage: "Voice Mode is a Premium feature"
+            )
         }
     }
     

@@ -11,6 +11,7 @@ struct PaywallView: View {
     let manager: SubscriptionManager
     var onComplete: (() -> Void)? = nil  // Optional callback for onboarding
     var showSkipButton: Bool = false
+    var contextMessage: String? = nil  // Optional message like "You've used your 5 free chats"
     @Environment(\.dismiss) private var dismiss
     
     @State private var isLoading = false
@@ -41,6 +42,15 @@ struct PaywallView: View {
                         
                         // Luna avatar
                         LunaAvatarLarge()
+                        
+                        // Context message (if provided)
+                        if let contextMessage = contextMessage {
+                            Text(contextMessage)
+                                .font(Theme.headlineFont)
+                                .foregroundStyle(Theme.textPrimary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
                         
                         // Title
                         VStack(spacing: Theme.spacingSmall) {
