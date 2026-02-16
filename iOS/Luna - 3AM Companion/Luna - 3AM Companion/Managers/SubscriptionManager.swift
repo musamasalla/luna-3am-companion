@@ -70,7 +70,8 @@ final class SubscriptionManager {
             storeLogger.info("Purchase succeeded, verifying...")
             let transaction = try checkVerified(verification)
             await transaction.finish()
-            await updateSubscriptionStatus()
+            // Set premium immediately — don't wait for entitlements to propagate
+            isPremium = true
             storeLogger.info("Purchase complete! isPremium: \(self.isPremium)")
             
         case .userCancelled:
