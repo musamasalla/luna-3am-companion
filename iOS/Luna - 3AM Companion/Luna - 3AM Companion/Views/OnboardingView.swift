@@ -28,8 +28,12 @@ struct OnboardingView: View {
                     .tag(2)
                 
                 // AI Data Consent (Apple Guideline 5.1.1/5.1.2)
-                AIConsentView()
-                    .tag(3)
+                AIConsentView {
+                    withAnimation {
+                        currentPage = 4
+                    }
+                }
+                .tag(3)
                 
                 // Use the proper PaywallView with StoreKit integration
                 OnboardingPaywallWrapper(

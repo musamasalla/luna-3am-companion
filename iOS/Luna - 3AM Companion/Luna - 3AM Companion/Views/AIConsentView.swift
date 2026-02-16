@@ -9,7 +9,7 @@ import SwiftUI
 
 struct AIConsentView: View {
     @AppStorage("hasAcceptedAIDataSharing") private var hasAcceptedAIDataSharing = false
-    @State private var showPrivacyPolicy = false
+    var onContinue: (() -> Void)? = nil
     
     var body: some View {
         VStack(spacing: Theme.spacingLarge) {
@@ -60,9 +60,7 @@ struct AIConsentView: View {
             Spacer()
             
             // Privacy policy link
-            Button {
-                showPrivacyPolicy = true
-            } label: {
+            Link(destination: URL(string: "https://musamasalla.github.io/luna-3am-companion/privacy.html")!) {
                 Label("Read Full Privacy Policy", systemImage: "doc.text")
                     .font(Theme.captionFont)
                     .foregroundStyle(Theme.lunaOrange)
@@ -72,6 +70,7 @@ struct AIConsentView: View {
             Button {
                 withAnimation {
                     hasAcceptedAIDataSharing = true
+                    onContinue?()
                 }
             } label: {
                 Text("I Understand & Agree")
@@ -86,9 +85,6 @@ struct AIConsentView: View {
             .padding(.bottom, Theme.spacingXLarge)
         }
         .padding()
-        .sheet(isPresented: $showPrivacyPolicy) {
-            SafariView(url: URL(string: "https://musamasalla.github.io/luna-3am-companion/privacy.html")!)
-        }
     }
 }
 
@@ -126,22 +122,6 @@ private struct DataDisclosureRow: View {
                 .stroke(.white.opacity(0.1), lineWidth: 1)
         )
     }
-}
-
-// MARK: - Safari View for Privacy Policy
-struct SafariView: UIViewControllerRepresentable {
-    let url: URL
-    
-    func makeUIViewController(context: Context) -> some UIViewController {
-        let vc = UIViewController()
-        DispatchQueue.main.async {
-            UIApplication.shared.open(url)
-            vc.dismiss(animated: true)
-        }
-        return vc
-    }
-    
-    func updateUIViewController(_ uiViewController: some UIViewController, context: Context) {}
 }
 
 #Preview {

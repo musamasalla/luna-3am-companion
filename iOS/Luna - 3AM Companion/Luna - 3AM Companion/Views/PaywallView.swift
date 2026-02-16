@@ -114,7 +114,7 @@ struct PaywallView: View {
                                         await purchasePremium()
                                     }
                                 } label: {
-                                    if isLoading {
+                                    if isLoading || manager.products.isEmpty {
                                         ProgressView()
                                             .tint(Theme.backgroundPrimary)
                                             .frame(maxWidth: .infinity)
@@ -129,7 +129,7 @@ struct PaywallView: View {
                                 }
                                 .background(Theme.premiumGradient)
                                 .clipShape(.rect(cornerRadius: Theme.cornerRadiusPill))
-                                .disabled(isLoading)
+                                .disabled(isLoading || manager.products.isEmpty)
                                 
                                 if showSkipButton {
                                     Button {
