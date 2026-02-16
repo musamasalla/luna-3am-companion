@@ -27,12 +27,16 @@ struct OnboardingView: View {
                 HowItWorksPage()
                     .tag(2)
                 
+                // AI Data Consent (Apple Guideline 5.1.1/5.1.2)
+                AIConsentView()
+                    .tag(3)
+                
                 // Use the proper PaywallView with StoreKit integration
                 OnboardingPaywallWrapper(
                     manager: subscriptionManager,
                     onComplete: completeOnboarding
                 )
-                .tag(3)
+                .tag(4)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
             .indexViewStyle(.page(backgroundDisplayMode: .always))
