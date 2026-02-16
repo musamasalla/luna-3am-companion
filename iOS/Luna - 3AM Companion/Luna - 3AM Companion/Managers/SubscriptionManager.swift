@@ -41,7 +41,9 @@ final class SubscriptionManager {
     
     func loadProducts() async {
         do {
+            storeLogger.info("Loading products for ID: \(Config.premiumProductID)")
             products = try await Product.products(for: [Config.premiumProductID])
+            storeLogger.info("Loaded \(self.products.count) product(s): \(self.products.map { $0.id })")
         } catch {
             storeLogger.error("Failed to load products: \(error)")
         }
@@ -50,10 +52,14 @@ final class SubscriptionManager {
     // MARK: - Purchase
     
     func purchasePremium() async throws {
+        storeLogger.info("purchasePremium called. Products count: \(self.products.count)")
+        
         guard let product = products.first else {
+            storeLogger.error("No products available — cannot purchase")
             throw SubscriptionError.productNotFound
         }
         
+        storeLogger.info("Attempting purchase of: \(product.id) (\(product.displayPrice))")
         purchaseInProgress = true
         defer { purchaseInProgress = false }
         
@@ -61,17 +67,22 @@ final class SubscriptionManager {
         
         switch result {
         case .success(let verification):
+            storeLogger.info("Purchase succeeded, verifying...")
             let transaction = try checkVerified(verification)
             await transaction.finish()
             await updateSubscriptionStatus()
+            storeLogger.info("Purchase complete! isPremium: \(self.isPremium)")
             
         case .userCancelled:
+            storeLogger.info("User cancelled purchase")
             throw SubscriptionError.userCancelled
             
         case .pending:
+            storeLogger.info("Purchase pending approval")
             throw SubscriptionError.pending
             
         @unknown default:
+            storeLogger.error("Unknown purchase result")
             throw SubscriptionError.unknown
         }
     }

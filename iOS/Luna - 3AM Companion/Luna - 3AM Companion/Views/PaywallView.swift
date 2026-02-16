@@ -7,6 +7,9 @@
 
 import SwiftUI
 import StoreKit
+import os.log
+
+private let paywallLogger = Logger(subsystem: "com.luna.companion", category: "Paywall")
 
 struct PaywallView: View {
     let manager: SubscriptionManager
@@ -200,18 +203,22 @@ struct PaywallView: View {
     // MARK: - Actions
     
     private func purchasePremium() async {
+        paywallLogger.info("Subscribe button tapped. Products loaded: \(manager.products.count)")
         isLoading = true
         errorMessage = nil
         
         do {
             try await manager.purchasePremium()
+            paywallLogger.info("Purchase succeeded — completing")
             onComplete?()
             dismiss()
         } catch let error as SubscriptionError {
+            paywallLogger.error("SubscriptionError: \(error.errorDescription ?? "unknown")")
             if error != .userCancelled {
                 errorMessage = error.errorDescription
             }
         } catch {
+            paywallLogger.error("Unexpected error: \(error.localizedDescription)")
             errorMessage = "Something went wrong. Please try again."
         }
         
