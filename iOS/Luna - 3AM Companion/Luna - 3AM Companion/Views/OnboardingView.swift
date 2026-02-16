@@ -9,6 +9,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("hasAcceptedAIDataSharing") private var hasAcceptedAIDataSharing = false
     @State private var currentPage = 0
     let subscriptionManager: SubscriptionManager
     
@@ -36,11 +37,14 @@ struct OnboardingView: View {
                 .tag(3)
                 
                 // Use the proper PaywallView with StoreKit integration
-                OnboardingPaywallWrapper(
-                    manager: subscriptionManager,
-                    onComplete: completeOnboarding
-                )
-                .tag(4)
+                // Only allow navigating here IF consent is given
+                if hasAcceptedAIDataSharing {
+                    OnboardingPaywallWrapper(
+                        manager: subscriptionManager,
+                        onComplete: completeOnboarding
+                    )
+                    .tag(4)
+                }
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
             .indexViewStyle(.page(backgroundDisplayMode: .always))

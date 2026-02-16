@@ -10,7 +10,7 @@ import SwiftData
 
 struct MainTabView: View {
     @State private var selectedTab = 0
-    @State private var subscriptionManager = SubscriptionManager()
+    let subscriptionManager: SubscriptionManager
     @State private var usageTracker = UsageTracker()
     
     var body: some View {
@@ -39,7 +39,6 @@ struct MainTabView: View {
 }
 
 #Preview {
-    MainTabView()
+    MainTabView(subscriptionManager: SubscriptionManager())
         .modelContainer(for: [Conversation.self, Message.self], inMemory: true)
 }
-

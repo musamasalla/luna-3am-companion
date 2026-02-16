@@ -29,7 +29,7 @@ struct Luna___3AM_CompanionApp: App {
     var body: some Scene {
         WindowGroup {
             if hasCompletedOnboarding {
-                MainTabView()
+                MainTabView(subscriptionManager: subscriptionManager)
             } else {
                 OnboardingView(subscriptionManager: subscriptionManager)
             }
