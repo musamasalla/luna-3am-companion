@@ -48,6 +48,11 @@ struct FluidHeader: View {
             LinearGradient(colors: [.black.opacity(0.5), .clear], startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
         )
+        .overlay(alignment: .topTrailing) {
+            sleepButton
+                .padding(.trailing, 20)
+                .padding(.top, 40) // Status bar offset
+        }
     }
     
     private var collapsedView: some View {
@@ -63,6 +68,10 @@ struct FluidHeader: View {
             }
             
             Spacer()
+            
+            // Sleep Mode Toggle
+            sleepButton
+                .scaleEffect(0.8)
             
             // Status indicator in collapsed state
             Circle()
@@ -92,6 +101,34 @@ struct FluidHeader: View {
             return "Early riser or late nighter?"
         default:
             return "I'll be here when you can't sleep"
+        }
+    }
+    
+    // MARK: - Sleep Mode Toggle
+    
+    private var sleepButton: some View {
+        Button {
+            let generator = UIImpactFeedbackGenerator(style: .medium)
+            generator.impactOccurred()
+            AmbientSoundService.shared.toggle()
+        } label: {
+            ZStack {
+                if AmbientSoundService.shared.isPlaying {
+                    Circle()
+                        .fill(Color.indigo.opacity(0.3))
+                        .frame(width: 36, height: 36)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.indigo.opacity(0.6), lineWidth: 1)
+                        )
+                }
+                
+                Image(systemName: AmbientSoundService.shared.isPlaying ? "moon.stars.fill" : "moon.stars")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(AmbientSoundService.shared.isPlaying ? Color.indigo : .white.opacity(0.6))
+            }
+            .frame(width: 44, height: 44)
+            .contentShape(Circle())
         }
     }
 }
