@@ -109,13 +109,31 @@ final class LunaAIService {
             throw LunaAIError.sessionNotInitialized
         }
         
-        let response = try await chat.sendMessage(enrichedMessage)
-        
-        if let text = response.text, !text.isEmpty {
-            return text
-        } else {
-            throw LunaAIError.emptyResponse
+        // Retry mechanism: Attempt up to 3 times
+        var lastError: Error?
+        for attempt in 1...3 {
+            do {
+                if attempt > 1 {
+                    aiLogger.warning("Attempt \(attempt) to generate response...")
+                    // Simple backoff: wait 1 second before retrying
+                    try await Task.sleep(nanoseconds: 1_000_000_000)
+                }
+                
+                let response = try await chat.sendMessage(enrichedMessage)
+                
+                if let text = response.text, !text.isEmpty {
+                    return text
+                } else {
+                    throw LunaAIError.emptyResponse
+                }
+            } catch {
+                aiLogger.error("AI Generation failed (Attempt \(attempt)): \(error.localizedDescription)")
+                lastError = error
+            }
         }
+        
+        // If we get here, all retries failed
+        throw lastError ?? LunaAIError.emptyResponse
     }
     
     enum LunaAIError: LocalizedError {
