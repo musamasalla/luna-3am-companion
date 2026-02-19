@@ -7,6 +7,7 @@
 
 import Foundation
 import AVFoundation
+import MediaPlayer
 import Observation
 import os.log
 
@@ -97,6 +98,39 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
         try await playAudio(data: data)
     }
     
+    // MARK: - Remote Command Center
+    
+    private func setupRemoteTransportControls() {
+        let commandCenter = MPRemoteCommandCenter.shared()
+        
+        commandCenter.playCommand.addTarget { [weak self] event in
+            guard let self = self, let player = self.audioPlayer, !player.isPlaying else { return .commandFailed }
+            player.play()
+            self.isSpeaking = true
+            return .success
+        }
+        
+        commandCenter.pauseCommand.addTarget { [weak self] event in
+            guard let self = self, let player = self.audioPlayer, player.isPlaying else { return .commandFailed }
+            player.pause()
+            self.isSpeaking = false
+            return .success
+        }
+    }
+    
+    private func updateNowPlayingInfo(title: String) {
+        var nowPlayingInfo = [String: Any]()
+        nowPlayingInfo[MPMediaItemPropertyTitle] = title
+        nowPlayingInfo[MPMediaItemPropertyArtist] = "Luna"
+        
+        // Artwork (Optional)
+        if let image = UIImage(named: "AppIcon") {
+            nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+        }
+        
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+    
     // MARK: - Audio Playback
     
     private func playAudio(data: Data) async throws {
@@ -104,6 +138,10 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
         try session.setActive(true)
+        
+        // Setup Remote Controls
+        setupRemoteTransportControls()
+        updateNowPlayingInfo(title: "Speaking...")
         
         // Create player
         audioPlayer = try AVAudioPlayer(data: data)
@@ -117,17 +155,22 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
         
         player.play()
         
-        // Wait for playback to complete
+        // Wait for playback to complete (while checking cancel state)
         while player.isPlaying {
             try await Task.sleep(nanoseconds: 100_000_000) // 0.1s
         }
         
         await MainActor.run { self.isSpeaking = false }
+        
+        // Cleanup NowPlaying
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        try? session.setActive(false, options: .notifyOthersOnDeactivation)
     }
     
     func stop() {
         audioPlayer?.stop()
         isSpeaking = false
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
     }
     
     // MARK: - AVAudioPlayerDelegate
@@ -135,6 +178,7 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         DispatchQueue.main.async {
             self.isSpeaking = false
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
         }
     }
 }

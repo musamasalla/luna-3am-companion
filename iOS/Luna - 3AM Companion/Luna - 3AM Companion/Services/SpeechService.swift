@@ -153,6 +153,9 @@ class SpeechService: NSObject, SFSpeechRecognizerDelegate, AVSpeechSynthesizerDe
     // MARK: - Speaking (Text to Speech)
     
     func speak(_ text: String) {
+        // Stop listening to free up Audio Engine and Session
+        stopListening()
+        
         // Stop any current speech
         stopSpeaking()
         
