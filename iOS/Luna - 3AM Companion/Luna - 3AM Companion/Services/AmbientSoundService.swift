@@ -5,6 +5,24 @@ import Observation
 import SwiftUI
 import UIKit
 
+// MARK: - Sound Types
+
+enum AmbientSound: String, CaseIterable, Identifiable {
+    case ocean = "ocean_waves"
+    case night = "night_ambience"
+    case forest = "forest_sounds"
+    
+    var id: String { rawValue }
+    
+    var displayName: String {
+        switch self {
+        case .ocean: return "Ocean Waves"
+        case .night: return "Night Ambience"
+        case .forest: return "Forest Sounds"
+        }
+    }
+}
+
 @Observable
 class AmbientSoundService: NSObject, AVAudioPlayerDelegate {
     static let shared = AmbientSoundService()
@@ -19,12 +37,30 @@ class AmbientSoundService: NSObject, AVAudioPlayerDelegate {
         }
     }
     
+    // Persist selection
+    var selectedSound: AmbientSound {
+        didSet {
+            if oldValue != selectedSound {
+                UserDefaults.standard.set(selectedSound.rawValue, forKey: "selectedAmbientSound")
+                changeSound(to: selectedSound)
+            }
+        }
+    }
+    
     private var player: AVAudioPlayer?
     private let audioSession = AVAudioSession.sharedInstance()
     private var fadeTimer: Timer?
     private let targetVolume: Float = 0.5
     
     override init() {
+        // Load saved sound or default to ocean
+        if let savedRaw = UserDefaults.standard.string(forKey: "selectedAmbientSound"),
+           let savedSound = AmbientSound(rawValue: savedRaw) {
+            self.selectedSound = savedSound
+        } else {
+            self.selectedSound = .ocean
+        }
+        
         super.init()
         setupRemoteCommandCenter()
         setupPlayer()
@@ -39,19 +75,20 @@ class AmbientSoundService: NSObject, AVAudioPlayerDelegate {
     }
     
     private func setupPlayer() {
-        // Look for the file in the bundle
-        // NOTE: User must add "ocean_waves.mp3" to the Xcode project manually if not present
-        guard let url = Bundle.main.url(forResource: "ocean_waves", withExtension: "mp3") else {
-            print("⚠️ AmbientSoundService: 'ocean_waves.mp3' not found in bundle!")
+        let filename = selectedSound.rawValue
+        
+        guard let url = Bundle.main.url(forResource: filename, withExtension: "mp3") else {
+            print("⚠️ AmbientSoundService: '\(filename).mp3' not found in bundle!")
             return
         }
         
         do {
-            player = try AVAudioPlayer(contentsOf: url)
-            player?.numberOfLoops = -1 // Infinite loop
-            player?.prepareToPlay()
-            player?.delegate = self
-            player?.volume = 0
+            let newPlayer = try AVAudioPlayer(contentsOf: url)
+            newPlayer.numberOfLoops = -1 // Infinite loop
+            newPlayer.prepareToPlay()
+            newPlayer.delegate = self
+            newPlayer.volume = 0
+            self.player = newPlayer
         } catch {
             print("❌ AmbientSoundService: Player init failed: \(error.localizedDescription)")
         }
@@ -92,6 +129,26 @@ class AmbientSoundService: NSObject, AVAudioPlayerDelegate {
         }
     }
     
+    func changeSound(to sound: AmbientSound) {
+        let wasPlaying = isPlaying
+        
+        // If playing, stop current sound first
+        if isPlaying {
+            player?.stop()
+        }
+        
+        // Setup new player
+        setupPlayer()
+        
+        // If it was playing, resume with the new sound
+        if wasPlaying {
+             play()
+        } else {
+            // Just update metadata if stopped
+            updateNowPlayingInfo()
+        }
+    }
+    
     func stop() {
         player?.stop()
         try? audioSession.setActive(false, options: .notifyOthersOnDeactivation)
@@ -112,6 +169,9 @@ class AmbientSoundService: NSObject, AVAudioPlayerDelegate {
     private func fadeIn() {
         fadeTimer?.invalidate()
         player?.volume = 0
+        
+        // Cancel any pending fades to prevent fighting
+        // Reset volume to 0 to start fade
         
         fadeTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
             guard let self = self, let player = self.player else { return }
@@ -171,7 +231,7 @@ class AmbientSoundService: NSObject, AVAudioPlayerDelegate {
     
     private func updateNowPlayingInfo() {
         var nowPlayingInfo = [String: Any]()
-        nowPlayingInfo[MPMediaItemPropertyTitle] = "Ocean Waves"
+        nowPlayingInfo[MPMediaItemPropertyTitle] = selectedSound.displayName
         nowPlayingInfo[MPMediaItemPropertyArtist] = "Night Owl Ambient"
         nowPlayingInfo[MPNowPlayingInfoPropertyIsLiveStream] = true // Since it's a loop
         

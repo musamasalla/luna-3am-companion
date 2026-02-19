@@ -25,6 +25,29 @@ struct SettingsView: View {
                     .ignoresSafeArea()
                 
                 List {
+                    // Ambient Sound Section
+                    Section {
+                        @Bindable var ambientService = AmbientSoundService.shared
+                        
+                        Picker("Sleep Sound", selection: $ambientService.selectedSound) {
+                            ForEach(AmbientSound.allCases) { sound in
+                                Text(sound.displayName).tag(sound)
+                            }
+                        }
+                        .tint(Theme.lunaOrange)
+                    } header: {
+                        Text("Ambience")
+                            .foregroundStyle(Theme.textMuted)
+                    }
+                    .listRowBackground(
+                        Rectangle()
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                Rectangle()
+                                    .stroke(.white.opacity(0.1), lineWidth: 0.5)
+                            )
+                    )
+
                     // Subscription Section
                     Section {
                         Button {
