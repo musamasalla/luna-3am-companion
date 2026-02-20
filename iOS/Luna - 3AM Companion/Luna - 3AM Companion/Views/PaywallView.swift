@@ -172,9 +172,13 @@ struct PaywallView: View {
                                 .foregroundStyle(Theme.textMuted)
                             
                             HStack(spacing: Theme.spacingMedium) {
-                                Link("Terms of Service", destination: URL(string: "https://musamasalla.github.io/luna-3am-companion/terms.html")!)
+                                if let termsURL = URL(string: Config.termsOfServiceURL) {
+                                    Link("Terms of Service", destination: termsURL)
+                                }
                                 Text("·").foregroundStyle(Theme.textMuted)
-                                Link("Privacy Policy", destination: URL(string: "https://musamasalla.github.io/luna-3am-companion/privacy.html")!)
+                                if let privacyURL = URL(string: Config.privacyPolicyURL) {
+                                    Link("Privacy Policy", destination: privacyURL)
+                                }
                             }
                             .font(Theme.smallFont)
                             .foregroundStyle(Theme.textMuted)

@@ -60,10 +60,12 @@ struct AIConsentView: View {
             Spacer()
             
             // Privacy policy link
-            Link(destination: URL(string: "https://musamasalla.github.io/luna-3am-companion/privacy.html")!) {
-                Label("Read Full Privacy Policy", systemImage: "doc.text")
-                    .font(Theme.captionFont)
-                    .foregroundStyle(Theme.lunaOrange)
+            if let privacyURL = URL(string: Config.privacyPolicyURL) {
+                Link(destination: privacyURL) {
+                    Label("Read Full Privacy Policy", systemImage: "doc.text")
+                        .font(Theme.captionFont)
+                        .foregroundStyle(Theme.lunaOrange)
+                }
             }
             
             // Consent button

@@ -139,7 +139,7 @@ struct VoiceChatView: View {
             resetSilenceTimer()
         }
         .alert("Microphone Access Required", isPresented: $showPermissionAlert) {
-            Button("Settings", role: .cancel) {
+            Button("Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }

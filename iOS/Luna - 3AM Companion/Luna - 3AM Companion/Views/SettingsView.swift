@@ -136,7 +136,7 @@ struct SettingsView: View {
                             Label("Version", systemImage: "info.circle.fill")
                                 .foregroundStyle(Theme.textPrimary)
                             Spacer()
-                            Text("1.0.0")
+                            Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
                                 .foregroundStyle(Theme.textMuted)
                         }
                     } header: {

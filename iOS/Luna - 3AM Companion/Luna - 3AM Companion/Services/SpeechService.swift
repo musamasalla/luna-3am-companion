@@ -60,10 +60,11 @@ class SpeechService: NSObject, SFSpeechRecognizerDelegate, AVSpeechSynthesizerDe
             }
         }
         
-        // Microphone
-        AVAudioSession.sharedInstance().requestRecordPermission { [weak self] allowed in
-            Task { @MainActor [weak self] in
-                self?.isAuthorizedToRecord = allowed
+        // Microphone (modern API)
+        Task {
+            let granted = await AVAudioApplication.requestRecordPermission()
+            await MainActor.run { [weak self] in
+                self?.isAuthorizedToRecord = granted
             }
         }
     }
