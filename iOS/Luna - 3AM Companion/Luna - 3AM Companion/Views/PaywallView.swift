@@ -185,6 +185,8 @@ struct PaywallView: View {
                         }
                         .padding(.bottom, Theme.spacingMedium)
                     }
+                    .frame(maxWidth: 500)
+                    .frame(maxWidth: .infinity)
                     .frame(minHeight: geometry.size.height)
                 }
             }

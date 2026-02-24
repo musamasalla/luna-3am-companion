@@ -62,95 +62,116 @@ struct OnboardingView: View {
 // MARK: - Welcome Page
 private struct WelcomePage: View {
     var body: some View {
-        VStack(spacing: Theme.spacingLarge) {
-            Spacer()
-            
-            // Luna video greeting
-            LoopingVideoPlayer(videoName: "luna_welcome")
-                .frame(width: 320, height: 320)
-                .clipShape(Circle())
-                .overlay(Circle().stroke(Theme.accentGlow.opacity(0.3), lineWidth: 1))
-                .shadow(color: Theme.accentGlow.opacity(0.6), radius: 30, x: 0, y: 0)
-            
-            Text("Hi, I'm Luna 🦉")
-                .font(Theme.titleFont)
-                .foregroundStyle(Theme.textPrimary)
-            
-            VStack(spacing: Theme.spacingSmall) {
-                Text("I'm awake when you can't sleep")
-                    .font(Theme.bodyFont)
-                    .foregroundStyle(Theme.textSecondary)
-                
-                Text("No meditation, no pressure - just company")
-                    .font(Theme.bodyFont)
-                    .foregroundStyle(Theme.textSecondary)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: Theme.spacingLarge) {
+                    Spacer(minLength: Theme.spacingLarge)
+                    
+                    // Luna video greeting
+                    LoopingVideoPlayer(videoName: "luna_welcome")
+                        .frame(width: min(320, geometry.size.width - 80), height: min(320, geometry.size.width - 80))
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Theme.accentGlow.opacity(0.3), lineWidth: 1))
+                        .shadow(color: Theme.accentGlow.opacity(0.6), radius: 30, x: 0, y: 0)
+                    
+                    Text("Hi, I'm Luna 🦉")
+                        .font(Theme.titleFont)
+                        .foregroundStyle(Theme.textPrimary)
+                    
+                    VStack(spacing: Theme.spacingSmall) {
+                        Text("I'm awake when you can't sleep")
+                            .font(Theme.bodyFont)
+                            .foregroundStyle(Theme.textSecondary)
+                        
+                        Text("No meditation, no pressure - just company")
+                            .font(Theme.bodyFont)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Theme.spacingLarge)
+                    
+                    Spacer(minLength: Theme.spacingLarge)
+                    
+                    SwipeHint()
+                }
+                .frame(maxWidth: 500)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: geometry.size.height)
+                .padding()
             }
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, Theme.spacingLarge)
-            
-            Spacer()
-            
-            SwipeHint()
         }
-        .padding()
     }
 }
 
 // MARK: - When To Use Page
 private struct WhenToUsePage: View {
     var body: some View {
-        VStack(spacing: Theme.spacingLarge) {
-            Spacer()
-            
-            Text("Use Luna when:")
-                .font(Theme.headlineFont)
-                .foregroundStyle(Theme.textPrimary)
-            
-            VStack(alignment: .leading, spacing: Theme.spacingMedium) {
-                UseCaseRow(icon: "moon.fill", text: "You can't fall asleep")
-                UseCaseRow(icon: "clock.fill", text: "You wake up at 3am and can't turn your brain off")
-                UseCaseRow(icon: "heart.fill", text: "You feel alone in the middle of the night")
-                UseCaseRow(icon: "person.2.fill", text: "You just need someone who's awake too")
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: Theme.spacingLarge) {
+                    Spacer(minLength: Theme.spacingLarge)
+                    
+                    Text("Use Luna when:")
+                        .font(Theme.headlineFont)
+                        .foregroundStyle(Theme.textPrimary)
+                    
+                    VStack(alignment: .leading, spacing: Theme.spacingMedium) {
+                        UseCaseRow(icon: "moon.fill", text: "You can't fall asleep")
+                        UseCaseRow(icon: "clock.fill", text: "You wake up at 3am and can't turn your brain off")
+                        UseCaseRow(icon: "heart.fill", text: "You feel alone in the middle of the night")
+                        UseCaseRow(icon: "person.2.fill", text: "You just need someone who's awake too")
+                    }
+                    .padding(.horizontal, Theme.spacingMedium)
+                    
+                    Spacer(minLength: Theme.spacingLarge)
+                    
+                    SwipeHint()
+                }
+                .frame(maxWidth: 500)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: geometry.size.height)
+                .padding()
             }
-            .padding(.horizontal, Theme.spacingMedium)
-            
-            Spacer()
-            
-            SwipeHint()
         }
-        .padding()
     }
 }
 
 // MARK: - How It Works Page
 private struct HowItWorksPage: View {
     var body: some View {
-        VStack(spacing: Theme.spacingLarge) {
-            Spacer()
-            
-            LunaAvatarMedium()
-            
-            Text("Just chat with me")
-                .font(Theme.headlineFont)
-                .foregroundStyle(Theme.textPrimary)
-            
-            VStack(spacing: Theme.spacingMedium) {
-                Text("Tell me what's on your mind, or we can talk about random stuff")
-                    .font(Theme.bodyFont)
-                    .foregroundStyle(Theme.textSecondary)
-                
-                Text("I'm not here to fix you - just keep you company")
-                    .font(Theme.bodyFont)
-                    .foregroundStyle(Theme.lunaOrange)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: Theme.spacingLarge) {
+                    Spacer(minLength: Theme.spacingLarge)
+                    
+                    LunaAvatarMedium()
+                    
+                    Text("Just chat with me")
+                        .font(Theme.headlineFont)
+                        .foregroundStyle(Theme.textPrimary)
+                    
+                    VStack(spacing: Theme.spacingMedium) {
+                        Text("Tell me what's on your mind, or we can talk about random stuff")
+                            .font(Theme.bodyFont)
+                            .foregroundStyle(Theme.textSecondary)
+                        
+                        Text("I'm not here to fix you - just keep you company")
+                            .font(Theme.bodyFont)
+                            .foregroundStyle(Theme.lunaOrange)
+                    }
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Theme.spacingLarge)
+                    
+                    Spacer(minLength: Theme.spacingLarge)
+                    
+                    SwipeHint()
+                }
+                .frame(maxWidth: 500)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: geometry.size.height)
+                .padding()
             }
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, Theme.spacingLarge)
-            
-            Spacer()
-            
-            SwipeHint()
         }
-        .padding()
     }
 }
 
