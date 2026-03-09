@@ -2,7 +2,7 @@
 //  EdgeTTSAPIService.swift
 //  Luna - 3AM Companion
 //
-//  Service to call self-hosted Edge TTS server
+//  On-device Edge TTS using SwiftEdgeTTS (no server required)
 //
 
 import Foundation
@@ -10,6 +10,7 @@ import AVFoundation
 import MediaPlayer
 import Observation
 import os.log
+import SwiftEdgeTTS
 
 private let ttsLogger = Logger(subsystem: "com.luna.companion", category: "TTS")
 
@@ -18,38 +19,25 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
     
     // MARK: - Configuration
     
-    /// Your Edge TTS server URL (set this after deployment)
-    /// For local testing: "http://localhost:5050"
-    /// For production: "https://your-app.railway.app" or similar
-    private let serverURL: String
-    private let apiKey: String
-    
     // Voice options - Edge TTS neural voices
-    // See: https://tts.travisvn.com for full list
     private let defaultVoice = "en-US-AnaNeural"  // Child-like, warm, expressive
     
     var isSpeaking: Bool = false
     private var audioPlayer: AVAudioPlayer?
+    private let ttsService = EdgeTTSService()
     
-    init(serverURL: String = "https://openai-edge-tts-production-c3c6.up.railway.app", apiKey: String = "luna_tts_key") {
-        // Use provided URL or check Info.plist for override
-        self.serverURL = serverURL.isEmpty ? (Bundle.main.object(forInfoDictionaryKey: "EDGE_TTS_SERVER_URL") as? String ?? "") : serverURL
-        self.apiKey = apiKey
+    override init() {
         super.init()
     }
     
-    /// Check if the Edge TTS server is configured
+    /// On-device TTS is always configured — no server needed
     var isConfigured: Bool {
-        !serverURL.isEmpty
+        true
     }
     
     // MARK: - TTS Generation
     
     func speak(_ text: String) async throws {
-        guard isConfigured else {
-            throw EdgeTTSError.serverNotConfigured
-        }
-        
         // Strip emojis
         let sanitizedText = text.unicodeScalars
             .filter { !($0.properties.isEmoji && $0.properties.isEmojiPresentation) }
@@ -58,51 +46,30 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
         
         guard !sanitizedText.isEmpty else { return }
         
-        ttsLogger.debug("EdgeTTS API: Requesting speech for '\(sanitizedText.prefix(50))...'")
+        ttsLogger.debug("EdgeTTS: Synthesizing '\(sanitizedText.prefix(50))...'")
         
-        // Build request
-        guard let url = URL(string: "\(serverURL)/v1/audio/speech") else {
-            throw EdgeTTSError.invalidURL
-        }
+        // Generate audio file using on-device SwiftEdgeTTS
+        let outputURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("luna_tts_\(UUID().uuidString).mp3")
         
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        request.timeoutInterval = 30
+        let audioURL = try await ttsService.synthesize(
+            text: sanitizedText,
+            voice: defaultVoice,
+            outputURL: outputURL,
+            rate: "+15%"
+        )
         
-        let body: [String: Any] = [
-            "model": "tts-1",
-            "input": sanitizedText,
-            "voice": defaultVoice,
-            "response_format": "mp3",
-            "speed": 1.15
-        ]
-        
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-        
-        // Make request
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw EdgeTTSError.invalidResponse
-        }
-        
-        guard httpResponse.statusCode == 200 else {
-            let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
-            ttsLogger.error("EdgeTTS API Error (\(httpResponse.statusCode)): \(errorMessage)")
-            throw EdgeTTSError.serverError(statusCode: httpResponse.statusCode, message: errorMessage)
-        }
-        
-        // Play audio
+        // Load audio data and play
+        let data = try Data(contentsOf: audioURL)
         try await playAudio(data: data)
+        
+        // Clean up temp file
+        try? FileManager.default.removeItem(at: audioURL)
     }
     
     // MARK: - Remote Command Center
     
     private var activeContinuation: CheckedContinuation<Void, Error>?
-    
-    // MARK: - Remote Command Center
     
     private func setupRemoteTransportControls() {
         let commandCenter = MPRemoteCommandCenter.shared()
@@ -189,21 +156,18 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
         player.play()
         
         // Wait for playback to complete using a continuation
-        // This replaces the inefficient while loop
         do {
             try await withCheckedThrowingContinuation { continuation in
                 self.activeContinuation = continuation
             }
         } catch {
-            // Handle cancellation or other errors
             player.stop()
             throw error
         }
         
-        // Cleanup is handled in delegate or stop()
+        // Cleanup
         await MainActor.run { self.isSpeaking = false }
         
-        // Final cleanup
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
         try? session.setActive(false, options: .notifyOthersOnDeactivation)
         
@@ -248,24 +212,21 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
 // MARK: - Errors
 
 enum EdgeTTSError: LocalizedError {
-    case serverNotConfigured
     case invalidURL
     case invalidResponse
-    case serverError(statusCode: Int, message: String)
     case playbackFailed
+    case synthesisFailed(String)
     
     var errorDescription: String? {
         switch self {
-        case .serverNotConfigured:
-            return "Edge TTS server URL not configured"
         case .invalidURL:
-            return "Invalid server URL"
+            return "Invalid URL"
         case .invalidResponse:
-            return "Invalid server response"
-        case .serverError(let code, let message):
-            return "Server error (\(code)): \(message)"
+            return "Invalid response"
         case .playbackFailed:
             return "Audio playback failed"
+        case .synthesisFailed(let message):
+            return "Speech synthesis failed: \(message)"
         }
     }
 }
