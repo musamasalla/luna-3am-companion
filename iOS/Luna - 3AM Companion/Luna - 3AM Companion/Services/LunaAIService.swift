@@ -4,15 +4,12 @@
 //
 //  AI Service using Firebase AI Logic with Gemini
 //
-
 import Foundation
 import FirebaseAILogic
 import os.log
-
 private let aiLogger = Logger(subsystem: "com.luna.companion", category: "AI")
-
 /// Luna's AI companion service powered by Google Gemini via Firebase
-@MainActor
+// @MainActor removed - AI calls run off main thread to prevent UI blocking
 final class LunaAIService {
     static let shared = LunaAIService()
     
@@ -309,4 +306,3 @@ final class LunaAIService {
         }
     }
 }
-

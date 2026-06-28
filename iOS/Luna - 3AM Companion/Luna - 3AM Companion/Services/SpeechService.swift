@@ -123,10 +123,19 @@ class SpeechService: NSObject, SFSpeechRecognizerDelegate, AVSpeechSynthesizerDe
     }
     
     func stopListening() {
+        // Stop audio engine and remove tap first
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
+        
+        // End audio and cancel task
         recognitionRequest?.endAudio()
+        recognitionRequest = nil
+        
+        recognitionTask?.cancel()
+        recognitionTask = nil
+        
         isListening = false
+        transcript = ""
     }
     
     // MARK: - Voice Selection (Native TTS)

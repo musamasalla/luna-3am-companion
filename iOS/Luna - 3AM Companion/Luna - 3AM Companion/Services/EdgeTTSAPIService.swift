@@ -70,6 +70,22 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
     // MARK: - Remote Command Center
     
     private var activeContinuation: CheckedContinuation<Void, Error>?
+    private let continuationLock = NSLock()
+    
+    /// Thread-safe helper to prevent double-resume of continuation
+    private func resumeContinuation(with error: Error? = nil) {
+        continuationLock.lock()
+        defer { continuationLock.unlock() }
+        
+        guard let continuation = activeContinuation else { return }
+        activeContinuation = nil
+        
+        if let error = error {
+            continuation.resume(throwing: error)
+        } else {
+            continuation.resume()
+        }
+    }
     
     private func setupRemoteTransportControls() {
         let commandCenter = MPRemoteCommandCenter.shared()
@@ -185,9 +201,8 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
         
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
         
-        // Resume continuation to unblock playAudio
-        activeContinuation?.resume()
-        activeContinuation = nil
+        // Safely resume continuation to unblock playAudio
+        resumeContinuation()
     }
     
     // MARK: - AVAudioPlayerDelegate
@@ -199,13 +214,12 @@ class EdgeTTSAPIService: NSObject, AVAudioPlayerDelegate {
         
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
         
-        // Resume continuation to unblock playAudio
+        // Safely resume continuation to
         if flag {
-            activeContinuation?.resume()
+            resumeContinuation()
         } else {
-            activeContinuation?.resume(throwing: EdgeTTSError.playbackFailed)
+            resumeContinuation(with: EdgeTTSError.playbackFailed)
         }
-        activeContinuation = nil
     }
 }
 

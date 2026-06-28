@@ -187,16 +187,19 @@ class AmbientSoundService: NSObject, AVAudioPlayerDelegate {
     
     private func fadeOutAndStop() {
         fadeTimer?.invalidate()
-        
+
         fadeTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
             guard let self = self, let player = self.player else { return }
-            
+
             if player.volume > 0.05 {
                 player.volume -= 0.05
             } else {
+                // Inline cleanup instead of calling self.stop() to avoid timer re-entrancy
                 player.volume = 0
                 player.stop()
-                self.stop() // Full cleanup
+                try? self.audioSession.setActive(false, options: .notifyOthersOnDeactivation)
+                self.isPlaying = false
+                self.updateNowPlayingInfo()
                 timer.invalidate()
                 self.fadeTimer = nil
             }

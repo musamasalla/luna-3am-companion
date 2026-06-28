@@ -115,11 +115,15 @@ final class SubscriptionManager {
     
     private func listenForTransactions() -> Task<Void, Never> {
         Task.detached { [weak self] in
-            for await result in Transaction.updates {
-                if case .verified(let transaction) = result {
-                    await transaction.finish()
-                    await self?.updateSubscriptionStatus()
+            do {
+                for await result in Transaction.updates {
+                    if case .verified(let transaction) = result {
+                        await transaction.finish()
+                        await self?.updateSubscriptionStatus()
+                    }
                 }
+            } catch {
+                storeLogger.error("Transaction listener failed: \(error)")
             }
         }
     }

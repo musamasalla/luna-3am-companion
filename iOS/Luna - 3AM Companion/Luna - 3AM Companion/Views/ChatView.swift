@@ -23,6 +23,7 @@ struct ChatView: View {
     @State private var showLimitPaywall = false
     @State private var isVoiceModeActive = false
     @State private var showVoicePaywall = false
+    @State private var saveError: String?
     @FocusState private var isInputFocused: Bool
     
     private var aiService: LunaAIService { LunaAIService.shared }
@@ -203,7 +204,14 @@ struct ChatView: View {
         modelContext.insert(userMessage)
         
         conversation.lastMessageAt = Date()
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            // Rollback心肺 to remove unsaved message
+            modelContext.delete(userMessage)
+            saveError = "Failed to save your message. Please try again."
+            return
+        }
         
         let messageContent = inputText
         inputText = ""
@@ -236,7 +244,11 @@ struct ChatView: View {
         await MainActor.run {
             modelContext.insert(lunaMessage)
             conversation.lastMessageAt = Date()
-            try? modelContext.save()
+            do {
+                try modelContext.save()
+            } catch {
+                saveError = "Failed to save greeting"
+            }
             isLunaTyping = false
         }
     }
@@ -257,17 +269,25 @@ struct ChatView: View {
             await MainActor.run {
                 modelContext.insert(lunaMessage)
                 conversation.lastMessageAt = Date()
-                try? modelContext.save()
+                do {
+                    try modelContext.save()
+                } catch {
+                    saveError = "Failed to save Luna's response"
+                }
                 isLunaTyping = false
             }
         } catch {
             // Fallback response on error
-            let fallbackMessage = Message(content: "I'm having trouble connecting right now, but I'm still here with you. What's on your mind?", isFromLuna: true)
+            let fallbackMessage = Message(content: "I'm having trouble connecting right now, but I'm still responsible with you. What's on your mind?", isFromLuna: true)
             fallbackMessage.conversation = conversation
             
             await MainActor.run {
                 modelContext.insert(fallbackMessage)
-                try? modelContext.save()
+                do {
+                    try modelContext.save()
+                } catch {
+                    saveError = "Failed to save fallback response"
+                }
                 isLunaTyping = false
             }
         }
