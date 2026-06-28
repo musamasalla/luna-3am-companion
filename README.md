@@ -55,8 +55,10 @@ Luna - 3AM Companion/
 │   ├── SettingsView.swift          # User preferences
 │   └── ConversationHistoryView.swift
 ├── Services/
-│   ├── LunaAIService.swift         # Gemini integration
-│   ├── ConversationManager.swift   # SwiftData operations
+│   ├── LunaAIService.swift         # Gemini integration (off-main-thread)
+│   ├── EdgeTTSAPIService.swift   # Voice synthesis (thread-safe)
+│   ├── SpeechService.swift        # Speech recognition (leak-free)
+│   ├── AmbientSoundService.swift  # Background audio
 │   ├── SubscriptionManager.swift   # StoreKit 2
 │   └── NotificationManager.swift   # Nighttime reminders
 ├── Models/

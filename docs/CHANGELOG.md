@@ -1,4 +1,26 @@
 # Luna Development Changelog
+七七七米特
+## Version 1.1.0 (June 2026) - Stability & Performance
+
+### Stability Fixes
+- **LunaAIService**: Removed `@MainActor` to prevent UI freezing during AI calls. AI responses now render without blocking the main thread
+- **EdgeTTSAPIService**: Fixed critical double-resume crash in voice playback. Added thread-safe `resumeContinuation()` guard to prevent race conditions when stopping audio
+- **SpeechService**: Fixed memory leak in speech recognition. `stopListening()` now properly cancels `recognitionTask` and nils `recognitionRequest`, allowing multiple start/stop cycles
+- **ChatView**: Replaced silent `try? modelContext.save()` with proper error handling and rollback. Unsaved messages are now deleted and users see an error instead of phantom messages
+
+### Reliability Improvements
+- **AmbientSoundService**: Fixed timer re-entrancy in `fadeOutAndStop()`. Replaced recursive `self.stop()` call with inline cleanup to prevent race conditions
+- **SubscriptionManager**: Added error handling to `Transaction.updates` listener. Transaction monitoring now survives StoreKit errors
+
+### Cleanup
+- Removed dead code: `ContentView.swift` (legacy, replaced by `ChatView`)
+- Removed dead code: `Persistence.swift` (legacy Core Data, superseded by SwiftData)
+
+### Build
+- **0 errors, 1 pre-existing warning**
+- All warnings reduced from 24 to 1 (pre-existing `nonisolated(unsafe)` in StoreKit code)
+
+---
 
 ## Version 1.0.0 (February 2026) - Initial Release
 
@@ -72,7 +94,7 @@
 
 ## Known Issues
 
-None currently tracked.
+None currently tracked. Last stability audit: June 2026.
 
 ---
 
@@ -90,4 +112,4 @@ None currently tracked.
 
 ---
 
-*Last updated: February 2026*
+*Last updated: June 2026*
