@@ -20,21 +20,14 @@ final class SubscriptionManager {
     private(set) var products: [Product] = []
     private(set) var purchaseInProgress = false
     
-    // Store the task in a nonisolated way to allow cancellation in deinit
-    nonisolated(unsafe) private var updateListenerTask: Task<Void, Never>? = nil
-    
     // MARK: - Initialization
     
     init() {
-        updateListenerTask = listenForTransactions()
+        _ = listenForTransactions() // Start background transaction monitoring
         Task {
             await loadProducts()
             await updateSubscriptionStatus()
         }
-    }
-    
-    deinit {
-        updateListenerTask?.cancel()
     }
     
     // MARK: - Product Loading
@@ -115,15 +108,11 @@ final class SubscriptionManager {
     
     private func listenForTransactions() -> Task<Void, Never> {
         Task.detached { [weak self] in
-            do {
-                for await result in Transaction.updates {
-                    if case .verified(let transaction) = result {
-                        await transaction.finish()
-                        await self?.updateSubscriptionStatus()
-                    }
+            for await result in Transaction.updates {
+                if case .verified(let transaction) = result {
+                    await transaction.finish()
+                    await self?.updateSubscriptionStatus()
                 }
-            } catch {
-                storeLogger.error("Transaction listener failed: \(error)")
             }
         }
     }

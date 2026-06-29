@@ -187,13 +187,13 @@ class SpeechService: NSObject, SFSpeechRecognizerDelegate, AVSpeechSynthesizerDe
                     try await edgeTTSService.speak(sanitizedText)
                     
                     // Wait for completion
-                    while edgeTTSService.isSpeaking {
+                    while await edgeTTSService.isSpeaking {
                         try await Task.sleep(nanoseconds: 100_000_000)
                     }
                     await MainActor.run { self.isSpeaking = false }
                 } catch {
-                    speechLogger.error("Edge TTS Server failed: \(error.localizedDescription)")
-                    speechLogger.info("Falling back to Native TTS...")
+                    await speechLogger.error("Edge TTS Server failed: \(error.localizedDescription)")
+                    await speechLogger.info("Falling back to Native TTS...")
                     await MainActor.run {
                         self.speakNative(sanitizedText)
                     }
